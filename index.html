@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CD Collection</title>
+  <style>
+    body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
+    .album { cursor: pointer; }
+    img { width: 100%; border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>The CD Vault</h1>
+<div class="grid" id="grid"></div>
+
+<script>
+const CLIENT_ID = "acbe3982f5054ea4a49c9d694d79f61d";
+const REDIRECT_URI = window.location.origin + window.location.pathname;
+const PLAYLIST_ID = "51L8w7t8NfzEqlMzyJ3paq";
+
+function getToken() {
+  const hash = window.location.hash;
+
+  if (hash) {
+    const params = new URLSearchParams(hash.substring(1));
+    return params.get("access_token");
+  }
+
+  const authUrl = `https://accounts.spotify.com/authorize?` +
+    `client_id=${CLIENT_ID}` +
+    `&response_type=token` +
+    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+    `&scope=playlist-read-private`;
+
+  window.location = authUrl;
+}
+
+async function fetchAlbums(token) {
+  let url = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
+  let albums = {};
+
+  while (url) {
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+
+    data.items.forEach(item => {
+      if (!item.track) return;
+
+      const album = item.track.album;
+
+      albums[album.id] = {
+        name: album.name,
+        image: album.images[0]?.url,
+        url: album.external_urls.spotify
+      };
+    });
+
+    url = data.next;
+  }
+
+  return Object.values(albums);
+}
+
+function render(albums) {
+  const grid = document.getElementById("grid");
+
+  albums.forEach(album => {
+    const div = document.createElement("div");
+    div.className = "album";
+
+    div.innerHTML = `<img src="${album.image}" /><p>${album.name}</p>`;
+
+    div.onclick = () => window.open(album.url, "_blank");
+
+    grid.appendChild(div);
+  });
+}
+
+const token = getToken();
+if (token) {
+  fetchAlbums(token).then(render);
+}
+</script>
+
+</body>
+</html>
