@@ -15,25 +15,62 @@
 <div class="grid" id="grid"></div>
 
 <script>
-const CLIENT_ID = "acbe3982f5054ea4a49c9d694d79f61d";
+const CLIENT_ID = "YOUR_CLIENT_ID";
 const REDIRECT_URI = window.location.origin + window.location.pathname;
 const PLAYLIST_ID = "51L8w7t8NfzEqlMzyJ3paq";
 
-function getToken() {
-  const hash = window.location.hash;
+async function sha256(plain) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return await crypto.subtle.digest("SHA-256", data);
+}
 
-  if (hash) {
-    const params = new URLSearchParams(hash.substring(1));
-    return params.get("access_token");
-  }
+function base64urlencode(a) {
+  return btoa(String.fromCharCode(...new Uint8Array(a)))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
 
-  const authUrl = `https://accounts.spotify.com/authorize?` +
-    `client_id=${CLIENT_ID}` +
-    `&response_type=token` +
-    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&scope=playlist-read-private`;
+async function generatePKCE() {
+  const verifier = base64urlencode(crypto.getRandomValues(new Uint8Array(32)));
+  const challenge = base64urlencode(await sha256(verifier));
+  return { verifier, challenge };
+}
 
-  window.location = authUrl;
+async function redirectToAuth() {
+  const { verifier, challenge } = await generatePKCE();
+  localStorage.setItem("verifier", verifier);
+
+  const params = new URLSearchParams({
+    client_id: CLIENT_ID,
+    response_type: "code",
+    redirect_uri: REDIRECT_URI,
+    code_challenge_method: "S256",
+    code_challenge: challenge,
+    scope: "playlist-read-private"
+  });
+
+  window.location = `https://accounts.spotify.com/authorize?${params}`;
+}
+
+async function getToken(code) {
+  const verifier = localStorage.getItem("verifier");
+
+  const res = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: CLIENT_ID,
+      grant_type: "authorization_code",
+      code,
+      redirect_uri: REDIRECT_URI,
+      code_verifier: verifier
+    })
+  });
+
+  const data = await res.json();
+  return data.access_token;
 }
 
 async function fetchAlbums(token) {
@@ -80,10 +117,20 @@ function render(albums) {
   });
 }
 
-const token = getToken();
-if (token) {
-  fetchAlbums(token).then(render);
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+
+  if (!code) {
+    await redirectToAuth();
+  } else {
+    const token = await getToken(code);
+    const albums = await fetchAlbums(token);
+    render(albums);
+  }
 }
+
+init();
 </script>
 
 </body>
