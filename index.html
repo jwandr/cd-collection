@@ -112,6 +112,12 @@ async function getToken(code) {
   });
 
   const data = await res.json();
+  console.log("TOKEN RESPONSE:", data);
+
+  if (!data.access_token) {
+    throw new Error("Token failed");
+  }
+
   return data.access_token;
 }
 
@@ -175,16 +181,16 @@ async function init() {
     try {
       const token = await getToken(code);
 
-      // Clean URL properly
       window.history.replaceState({}, document.title, "/cd-collection/");
 
       const albums = await fetchAlbums(token);
       render(albums);
 
     } catch (e) {
-      console.error("Token exchange failed, retrying login");
-      await login();
+      console.error("Auth failed:", e);
+      alert("Authentication failed. Check console.");
     }
+
   } else {
     await login();
   }
