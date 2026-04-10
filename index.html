@@ -52,11 +52,16 @@
 <div id="grid" class="grid"></div>
 
 <script>
+/* =======================
+   CONFIG
+======================= */
 const CLIENT_ID = "acbe3982f5054ea4a49c9d694d79f61d";
 const REDIRECT_URI = "https://jwandr.github.io/cd-collection/";
 const PLAYLIST_ID = "51L8w7t8NfzEqlMzyJ3paq";
 
-// ---------- PKCE HELPERS ----------
+/* =======================
+   PKCE HELPERS
+======================= */
 function generateRandomString(length) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -74,11 +79,18 @@ async function sha256(plain) {
 
 function base64encode(buffer) {
   return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 }
 
-// ---------- AUTH ----------
+/* =======================
+   AUTH FLOW
+======================= */
 async function login() {
+  // prevent loop if already returning from auth
+  if (window.location.search.includes("code=")) return;
+
   const verifier = generateRandomString(64);
   localStorage.setItem("verifier", verifier);
 
@@ -93,7 +105,8 @@ async function login() {
     scope: "playlist-read-private"
   });
 
-  window.location = "https://accounts.spotify.com/authorize?" + params;
+  window.location.href =
+    "https://accounts.spotify.com/authorize?" + params.toString();
 }
 
 async function getToken(code) {
@@ -101,7 +114,9 @@ async function getToken(code) {
 
   const res = await fetch("https://accounts.spotify.com/api/token", {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
     body: new URLSearchParams({
       client_id: CLIENT_ID,
       grant_type: "authorization_code",
@@ -115,35 +130,60 @@ async function getToken(code) {
   console.log("TOKEN RESPONSE:", data);
 
   if (!data.access_token) {
-    throw new Error("Token failed");
+    throw new Error(data.error_description || "Token exchange failed");
   }
 
   return data.access_token;
 }
 
-// ---------- DATA ----------
+/* =======================
+   SPOTIFY API
+======================= */
 async function fetchAlbums(token) {
-  console.log("USING TOKEN:", token);
+  let url =
+    `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
 
-  const res = await fetch(
-    `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`,
-    {
+  let albums = {};
+
+  while (url) {
+    const res = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`
       }
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      console.error("Spotify API error:", data.error);
+      throw new Error(data.error.message);
     }
-  );
 
-  const data = await res.json();
+    (data.items || []).forEach(item => {
+      if (!item.track || !item.track.album) return;
 
-  console.log("PLAYLIST RESPONSE:", data);
+      const album = item.track.album;
 
-  return data;
+      albums[album.id] = {
+        name: album.name,
+        image: album.images?.[0]?.url,
+        url: album.external_urls.spotify
+      };
+    });
+
+    url = data.next;
+  }
+
+  return Object.values(albums);
 }
 
-// ---------- UI ----------
+/* =======================
+   UI
+======================= */
 function render(albums) {
   const grid = document.getElementById("grid");
+
+  grid.innerHTML = "";
 
   albums.forEach(album => {
     const div = document.createElement("div");
@@ -160,29 +200,37 @@ function render(albums) {
   });
 }
 
-// ---------- INIT ----------
+/* =======================
+   INIT
+======================= */
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
+  const error = params.get("error");
 
-  let token; // 👈 define it here
-
-  if (code) {
-    token = await getToken(code);
-
-    // Clean URL (important for GitHub Pages)
-    window.history.replaceState({}, document.title, "/cd-collection/");
-  } else {
-    await login();
+  if (error) {
+    console.error("Spotify auth error:", error);
+    alert("Login failed: " + error);
     return;
   }
 
   try {
+    if (!code) {
+      await login();
+      return;
+    }
+
+    const token = await getToken(code);
+
+    // clean URL safely (DO NOT break path)
+    window.history.replaceState({}, document.title, REDIRECT_URI);
+
     const albums = await fetchAlbums(token);
     render(albums);
+
   } catch (e) {
-    console.error("API failed:", e);
-    alert("Could not load playlist");
+    console.error("Init failed:", e);
+    alert("Something went wrong. Check console.");
   }
 }
 
