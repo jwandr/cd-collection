@@ -165,17 +165,24 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
 
-  if (code) {
-    try {
-  const albums = await fetchAlbums(token);
-  render(albums);
-} catch (e) {
-  console.error("API failed:", e);
-  alert("Could not load playlist");
-}
+  let token; // 👈 define it here
 
+  if (code) {
+    token = await getToken(code);
+
+    // Clean URL (important for GitHub Pages)
+    window.history.replaceState({}, document.title, "/cd-collection/");
   } else {
     await login();
+    return;
+  }
+
+  try {
+    const albums = await fetchAlbums(token);
+    render(albums);
+  } catch (e) {
+    console.error("API failed:", e);
+    alert("Could not load playlist");
   }
 }
 
