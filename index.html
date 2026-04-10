@@ -171,16 +171,22 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
 
-  if (!code) {
-    await login();
+  if (code) {
+    try {
+      const token = await getToken(code);
+
+      // Clean URL properly
+      window.history.replaceState({}, document.title, "/cd-collection/");
+
+      const albums = await fetchAlbums(token);
+      render(albums);
+
+    } catch (e) {
+      console.error("Token exchange failed, retrying login");
+      await login();
+    }
   } else {
-    const token = await getToken(code);
-
-    // Clean URL
-    window.history.replaceState({}, document.title, "/");
-
-    const albums = await fetchAlbums(token);
-    render(albums);
+    await login();
   }
 }
 
