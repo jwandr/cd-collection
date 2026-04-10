@@ -123,34 +123,22 @@ async function getToken(code) {
 
 // ---------- DATA ----------
 async function fetchAlbums(token) {
-  let url = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
-  let albums = {};
+  console.log("USING TOKEN:", token);
 
-  while (url) {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const data = await res.json();
-
-    data.items.forEach(item => {
-      if (!item.track) return;
-
-      const album = item.track.album;
-
-      if (!albums[album.id]) {
-        albums[album.id] = {
-          name: album.name,
-          image: album.images[0]?.url,
-          url: album.external_urls.spotify
-        };
+  const res = await fetch(
+    `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`
       }
-    });
+    }
+  );
 
-    url = data.next;
-  }
+  const data = await res.json();
 
-  return Object.values(albums);
+  console.log("PLAYLIST RESPONSE:", data);
+
+  return data;
 }
 
 // ---------- UI ----------
@@ -179,17 +167,12 @@ async function init() {
 
   if (code) {
     try {
-      const token = await getToken(code);
-
-      window.history.replaceState({}, document.title, "/cd-collection/");
-
-      const albums = await fetchAlbums(token);
-      render(albums);
-
-    } catch (e) {
-      console.error("Auth failed:", e);
-      alert("Authentication failed. Check console.");
-    }
+  const albums = await fetchAlbums(token);
+  render(albums);
+} catch (e) {
+  console.error("API failed:", e);
+  alert("Could not load playlist");
+}
 
   } else {
     await login();
