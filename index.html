@@ -2,25 +2,45 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>CD Collection</title>
+<title>The CD Vault</title>
 
 <style>
   body {
     margin: 0;
-    font-family: -apple-system, sans-serif;
+    font-family: -apple-system, system-ui, sans-serif;
     background: #121212;
     color: white;
   }
 
-  h1 {
-    text-align: center;
+  header {
     padding: 20px;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 10px 20px 20px;
+  }
+
+  input, select {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
   }
 
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 20px;
+    gap: 18px;
     padding: 20px;
   }
 
@@ -36,11 +56,20 @@
   img {
     width: 100%;
     border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
   }
 
   .title {
     font-size: 13px;
     margin-top: 6px;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .artist {
+    font-size: 11px;
+    opacity: 0.7;
     text-align: center;
   }
 </style>
@@ -48,193 +77,167 @@
 
 <body>
 
-<h1>The CD Vault</h1>
+<header>
+  <h1>The CD Vault</h1>
+</header>
+
+<div class="controls">
+  <input id="search" placeholder="Search album or artist..." />
+
+  <select id="sort">
+    <option value="album">Sort: Album A–Z</option>
+    <option value="artist">Sort: Artist A–Z</option>
+    <option value="year">Sort: Year</option>
+  </select>
+
+  <select id="genre">
+    <option value="all">All Genres</option>
+  </select>
+</div>
+
 <div id="grid" class="grid"></div>
 
 <script>
-/* =======================
-   CONFIG
-======================= */
-const CLIENT_ID = "acbe3982f5054ea4a49c9d694d79f61d";
-const REDIRECT_URI = "https://jwandr.github.io/cd-collection/";
-const PLAYLIST_ID = "51L8w7t8NfzEqlMzyJ3paq";
+/* =========================
+   STATIC DATA (EDIT THIS)
+========================= */
 
-/* =======================
-   PKCE HELPERS
-======================= */
-function generateRandomString(length) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+const albums = [
+  {
+    album: "OK Computer",
+    artist: "Radiohead",
+    year: 1997,
+    genre: "Alternative",
+    image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
+    spotify: "https://open.spotify.com/album/4xWXI3gVZ8T7d1xQ7Z5Q5J"
+  },
+  {
+    album: "Random Access Memories",
+    artist: "Daft Punk",
+    year: 2013,
+    genre: "Electronic",
+    image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
+    spotify: "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
+  },
+  {
+    album: "In Rainbows",
+    artist: "Radiohead",
+    year: 2007,
+    genre: "Alternative",
+    image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
+    spotify: "https://open.spotify.com/album/5vkqYmi5m8fG8v7y7f7f7f"
   }
-  return result;
-}
+];
 
-async function sha256(plain) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(plain);
-  return await crypto.subtle.digest('SHA-256', data);
-}
+/* =========================
+   STATE
+========================= */
 
-function base64encode(buffer) {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
-}
+let state = {
+  search: "",
+  sort: "album",
+  genre: "all"
+};
 
-/* =======================
-   AUTH FLOW
-======================= */
-async function login() {
-  // prevent loop if already returning from auth
-  if (window.location.search.includes("code=")) return;
+/* =========================
+   INIT UI
+========================= */
 
-  const verifier = generateRandomString(64);
-  localStorage.setItem("verifier", verifier);
+const grid = document.getElementById("grid");
+const search = document.getElementById("search");
+const sort = document.getElementById("sort");
+const genre = document.getElementById("genre");
 
-  const challenge = base64encode(await sha256(verifier));
+/* Populate genres dynamically */
+function initGenres() {
+  const genres = [...new Set(albums.map(a => a.genre))];
 
-  const params = new URLSearchParams({
-    client_id: CLIENT_ID,
-    response_type: "code",
-    redirect_uri: REDIRECT_URI,
-    code_challenge_method: "S256",
-    code_challenge: challenge,
-    scope: "playlist-read-private"
+  genres.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    genre.appendChild(opt);
   });
-
-  window.location.href =
-    "https://accounts.spotify.com/authorize?" + params.toString();
 }
 
-async function getToken(code) {
-  const verifier = localStorage.getItem("verifier");
+/* =========================
+   FILTER + SORT
+========================= */
 
-  const res = await fetch("https://accounts.spotify.com/api/token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({
-      client_id: CLIENT_ID,
-      grant_type: "authorization_code",
-      code: code,
-      redirect_uri: REDIRECT_URI,
-      code_verifier: verifier
+function getFilteredAlbums() {
+  return albums
+    .filter(a => {
+      const matchesSearch =
+        (a.album + a.artist).toLowerCase()
+          .includes(state.search.toLowerCase());
+
+      const matchesGenre =
+        state.genre === "all" || a.genre === state.genre;
+
+      return matchesSearch && matchesGenre;
     })
-  });
-
-  const data = await res.json();
-  console.log("TOKEN RESPONSE:", data);
-
-  if (!data.access_token) {
-    throw new Error(data.error_description || "Token exchange failed");
-  }
-
-  return data.access_token;
-}
-
-/* =======================
-   SPOTIFY API
-======================= */
-async function fetchAlbums(token) {
-  let url =
-    `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
-
-  let albums = {};
-
-  while (url) {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
+    .sort((a, b) => {
+      switch (state.sort) {
+        case "artist":
+          return a.artist.localeCompare(b.artist);
+        case "year":
+          return a.year - b.year;
+        default:
+          return a.album.localeCompare(b.album);
       }
     });
-
-    const data = await res.json();
-
-    if (data.error) {
-      console.error("Spotify API error:", data.error);
-      throw new Error(data.error.message);
-    }
-
-    (data.items || []).forEach(item => {
-      if (!item.track || !item.track.album) return;
-
-      const album = item.track.album;
-
-      albums[album.id] = {
-        name: album.name,
-        image: album.images?.[0]?.url,
-        url: album.external_urls.spotify
-      };
-    });
-
-    url = data.next;
-  }
-
-  return Object.values(albums);
 }
 
-/* =======================
-   UI
-======================= */
-function render(albums) {
-  const grid = document.getElementById("grid");
+/* =========================
+   RENDER
+========================= */
+
+function render() {
+  const list = getFilteredAlbums();
 
   grid.innerHTML = "";
 
-  albums.forEach(album => {
+  list.forEach(album => {
     const div = document.createElement("div");
     div.className = "album";
 
     div.innerHTML = `
-      <img src="${album.image}">
-      <div class="title">${album.name}</div>
+      <img src="${album.image}" alt="${album.album}">
+      <div class="title">${album.album}</div>
+      <div class="artist">${album.artist}</div>
     `;
 
-    div.onclick = () => window.open(album.url, "_blank");
+    div.onclick = () => window.open(album.spotify, "_blank");
 
     grid.appendChild(div);
   });
 }
 
-/* =======================
-   INIT
-======================= */
-async function init() {
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get("code");
-  const error = params.get("error");
+/* =========================
+   EVENTS
+========================= */
 
-  if (error) {
-    console.error("Spotify auth error:", error);
-    alert("Login failed: " + error);
-    return;
-  }
+search.addEventListener("input", e => {
+  state.search = e.target.value;
+  render();
+});
 
-  try {
-    if (!code) {
-      await login();
-      return;
-    }
+sort.addEventListener("change", e => {
+  state.sort = e.target.value;
+  render();
+});
 
-    const token = await getToken(code);
+genre.addEventListener("change", e => {
+  state.genre = e.target.value;
+  render();
+});
 
-    // clean URL safely (DO NOT break path)
-    window.history.replaceState({}, document.title, REDIRECT_URI);
+/* =========================
+   START
+========================= */
 
-    const albums = await fetchAlbums(token);
-    render(albums);
-
-  } catch (e) {
-    console.error("Init failed:", e);
-    alert("Something went wrong. Check console.");
-  }
-}
-
-init();
+initGenres();
+render();
 </script>
 
 </body>
