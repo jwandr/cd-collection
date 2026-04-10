@@ -1,46 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>CD Collection</title>
-  <style>
-    body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; }
-    .album { cursor: pointer; }
-    img { width: 100%; border-radius: 10px; }
-  </style>
+<meta charset="UTF-8">
+<title>CD Collection</title>
+
+<style>
+  body {
+    margin: 0;
+    font-family: -apple-system, sans-serif;
+    background: #121212;
+    color: white;
+  }
+
+  h1 {
+    text-align: center;
+    padding: 20px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .album {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  .album:hover {
+    transform: scale(1.05);
+  }
+
+  img {
+    width: 100%;
+    border-radius: 12px;
+  }
+
+  .title {
+    font-size: 13px;
+    margin-top: 6px;
+    text-align: center;
+  }
+</style>
 </head>
+
 <body>
 
 <h1>The CD Vault</h1>
-<div class="grid" id="grid"></div>
+<div id="grid" class="grid"></div>
 
 <script>
 const CLIENT_ID = "YOUR_CLIENT_ID";
-const REDIRECT_URI = window.location.origin + window.location.pathname;
+const REDIRECT_URI = "http://localhost:8000";
 const PLAYLIST_ID = "51L8w7t8NfzEqlMzyJ3paq";
+
+// ---------- PKCE HELPERS ----------
+function generateRandomString(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 async function sha256(plain) {
   const encoder = new TextEncoder();
   const data = encoder.encode(plain);
-  return await crypto.subtle.digest("SHA-256", data);
+  return await crypto.subtle.digest('SHA-256', data);
 }
 
-function base64urlencode(a) {
-  return btoa(String.fromCharCode(...new Uint8Array(a)))
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+function base64encode(buffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-async function generatePKCE() {
-  const verifier = base64urlencode(crypto.getRandomValues(new Uint8Array(32)));
-  const challenge = base64urlencode(await sha256(verifier));
-  return { verifier, challenge };
-}
-
-async function redirectToAuth() {
-  const { verifier, challenge } = await generatePKCE();
+// ---------- AUTH ----------
+async function login() {
+  const verifier = generateRandomString(64);
   localStorage.setItem("verifier", verifier);
+
+  const challenge = base64encode(await sha256(verifier));
 
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
@@ -51,7 +93,7 @@ async function redirectToAuth() {
     scope: "playlist-read-private"
   });
 
-  window.location = `https://accounts.spotify.com/authorize?${params}`;
+  window.location = "https://accounts.spotify.com/authorize?" + params;
 }
 
 async function getToken(code) {
@@ -63,7 +105,7 @@ async function getToken(code) {
     body: new URLSearchParams({
       client_id: CLIENT_ID,
       grant_type: "authorization_code",
-      code,
+      code: code,
       redirect_uri: REDIRECT_URI,
       code_verifier: verifier
     })
@@ -73,6 +115,7 @@ async function getToken(code) {
   return data.access_token;
 }
 
+// ---------- DATA ----------
 async function fetchAlbums(token) {
   let url = `https://api.spotify.com/v1/playlists/${PLAYLIST_ID}/tracks?limit=100`;
   let albums = {};
@@ -89,11 +132,13 @@ async function fetchAlbums(token) {
 
       const album = item.track.album;
 
-      albums[album.id] = {
-        name: album.name,
-        image: album.images[0]?.url,
-        url: album.external_urls.spotify
-      };
+      if (!albums[album.id]) {
+        albums[album.id] = {
+          name: album.name,
+          image: album.images[0]?.url,
+          url: album.external_urls.spotify
+        };
+      }
     });
 
     url = data.next;
@@ -102,6 +147,7 @@ async function fetchAlbums(token) {
   return Object.values(albums);
 }
 
+// ---------- UI ----------
 function render(albums) {
   const grid = document.getElementById("grid");
 
@@ -109,7 +155,10 @@ function render(albums) {
     const div = document.createElement("div");
     div.className = "album";
 
-    div.innerHTML = `<img src="${album.image}" /><p>${album.name}</p>`;
+    div.innerHTML = `
+      <img src="${album.image}">
+      <div class="title">${album.name}</div>
+    `;
 
     div.onclick = () => window.open(album.url, "_blank");
 
@@ -117,14 +166,19 @@ function render(albums) {
   });
 }
 
+// ---------- INIT ----------
 async function init() {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
 
   if (!code) {
-    await redirectToAuth();
+    await login();
   } else {
     const token = await getToken(code);
+
+    // Clean URL
+    window.history.replaceState({}, document.title, "/");
+
     const albums = await fetchAlbums(token);
     render(albums);
   }
