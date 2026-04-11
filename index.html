@@ -170,7 +170,7 @@
 <script>
 let state = {
   search: "",
-  sort: "album",
+  sort: "artist",
   activeTags: new Set(),
   spotlight: null
 };
@@ -187,13 +187,46 @@ function decade(y) {
   return y ? `${Math.floor(y / 10) * 10}s` : "Unknown";
 }
 
+function rgbToHue(r, g, b) {
+  r /= 255; g /= 255; b /= 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+
+  let h = 0;
+
+  if (delta === 0) return 0;
+
+  if (max === r) {
+    h = ((g - b) / delta) % 6;
+  } else if (max === g) {
+    h = (b - r) / delta + 2;
+  } else {
+    h = (r - g) / delta + 4;
+  }
+
+  h = Math.round(h * 60);
+  if (h < 0) h += 360;
+
+  return h;
+}
+
+function isGrey(r, g, b) {
+  return Math.abs(r - g) < 10 && Math.abs(g - b) < 10;
+}
+
 function colorScore(hex) {
   if (!hex) return 999;
+
   const c = hex.replace("#", "");
   const r = parseInt(c.slice(0,2),16);
   const g = parseInt(c.slice(2,4),16);
   const b = parseInt(c.slice(4,6),16);
-  return Math.atan2(Math.sqrt(3)*(g-b), 2*r-g-b);
+
+  if (isGrey(r, g, b)) return 1000;
+
+  return rgbToHue(r, g, b);
 }
 
 /* TAGS */
