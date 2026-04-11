@@ -37,6 +37,31 @@
     outline: none;
   }
 
+  /* 🏷 TAGS */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 0 20px 10px;
+  }
+
+  .tag {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #444;
+    cursor: pointer;
+    font-size: 12px;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+
+  .tag.active {
+    background: white;
+    color: black;
+  }
+
+  /* 🎯 SPOTLIGHT */
   .spotlight {
     display: flex;
     justify-content: center;
@@ -54,6 +79,7 @@
     border-radius: 12px;
   }
 
+  /* 🧱 GRID */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -132,6 +158,7 @@
   <button onclick="randomSpotlight()">🎲 Shuffle Spotlight</button>
 </div>
 
+<div id="tags" class="tags"></div>
 <div id="grid" class="grid"></div>
 
 <script src="albums.js"></script>
@@ -144,6 +171,7 @@
 let state = {
   search: "",
   sort: "album",
+  activeTags: new Set(),
   spotlight: null
 };
 
@@ -151,8 +179,8 @@ let state = {
    HELPERS
 ========================= */
 
-function normalize(title) {
-  return title.toLowerCase().replace(/^the\s+/i, "");
+function normalize(t) {
+  return t.toLowerCase().replace(/^the\s+/i, "");
 }
 
 function letter(a) {
@@ -163,17 +191,43 @@ function decade(y) {
   return y ? `${Math.floor(y / 10) * 10}s` : "Unknown";
 }
 
-/* 🌈 crude colour ranking (no library) */
+/* simple colour sort */
 function colorScore(hex) {
   if (!hex) return 999;
-
   const c = hex.replace("#", "");
-  const r = parseInt(c.substring(0,2),16);
-  const g = parseInt(c.substring(2,4),16);
-  const b = parseInt(c.substring(4,6),16);
-
-  // convert to pseudo-hue (very simplified)
+  const r = parseInt(c.slice(0,2),16);
+  const g = parseInt(c.slice(2,4),16);
+  const b = parseInt(c.slice(4,6),16);
   return Math.atan2(Math.sqrt(3)*(g-b), 2*r-g-b);
+}
+
+/* =========================
+   TAGS INIT
+========================= */
+
+function initTags() {
+  const tags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
+
+  const wrap = document.getElementById("tags");
+
+  tags.forEach(tag => {
+    const el = document.createElement("div");
+    el.className = "tag";
+    el.textContent = tag;
+
+    el.onclick = () => {
+      if (state.activeTags.has(tag)) {
+        state.activeTags.delete(tag);
+        el.classList.remove("active");
+      } else {
+        state.activeTags.add(tag);
+        el.classList.add("active");
+      }
+      render();
+    };
+
+    wrap.appendChild(el);
+  });
 }
 
 /* =========================
@@ -182,11 +236,21 @@ function colorScore(hex) {
 
 function getFiltered() {
   return albums
-    .filter(a =>
-      (a.album + a.artist)
-        .toLowerCase()
-        .includes(state.search.toLowerCase())
-    )
+    .filter(a => {
+
+      const matchesSearch =
+        (a.album + a.artist)
+          .toLowerCase()
+          .includes(state.search.toLowerCase());
+
+      const matchesTags =
+        state.activeTags.size === 0 ||
+        [...state.activeTags].every(t =>
+          (a.tags || []).includes(t)
+        );
+
+      return matchesSearch && matchesTags;
+    })
     .sort((a, b) => {
 
       switch (state.sort) {
@@ -224,17 +288,19 @@ function renderSpotlight() {
     return;
   }
 
+  const a = state.spotlight;
+
   el.innerHTML = `
-    <div class="spotlight-card" onclick="window.open('${state.spotlight.spotify}','_blank')">
-      <img src="${state.spotlight.image}">
-      <div class="title">${state.spotlight.album}</div>
-      <div class="artist">${state.spotlight.artist}</div>
+    <div class="spotlight-card" onclick="window.open('${a.spotify}','_blank')">
+      <img src="${a.image}">
+      <div class="title">${a.album}</div>
+      <div class="artist">${a.artist}</div>
     </div>
   `;
 }
 
 /* =========================
-   RENDER GRID
+   GRID
 ========================= */
 
 function render() {
@@ -243,38 +309,32 @@ function render() {
 
   grid.innerHTML = "";
 
-  let lastSection = null;
+  let last = null;
 
   list.forEach(a => {
 
-    // SECTION KEY
-    let sectionKey;
+    let section;
 
-    if (state.sort === "artist") sectionKey = letter(a.artist);
-    else if (state.sort === "year") sectionKey = decade(a.year);
-    else if (state.sort === "album") sectionKey = letter(a.album);
-    else if (state.sort === "color") sectionKey = "🌈";
+    if (state.sort === "artist") section = letter(a.artist);
+    else if (state.sort === "album") section = letter(a.album);
+    else if (state.sort === "year") section = decade(a.year);
+    else section = "🌈";
 
-    // SECTION TILE (same size as album)
-    if (sectionKey !== lastSection) {
-      const section = document.createElement("div");
-      section.className = "tile section-tile";
+    if (section !== last) {
+      const s = document.createElement("div");
+      s.className = "tile section-tile";
 
-      let sub = "";
-      if (state.sort === "year") sub = decade(a.year);
-
-      section.innerHTML = `
+      s.innerHTML = `
         <div>
-          ${sectionKey}
-          <div class="section-sub">${sub}</div>
+          ${section}
+          <div class="section-sub">${state.sort === "year" ? section : ""}</div>
         </div>
       `;
 
-      grid.appendChild(section);
-      lastSection = sectionKey;
+      grid.appendChild(s);
+      last = section;
     }
 
-    // ALBUM TILE
     const div = document.createElement("div");
     div.className = "tile";
 
@@ -308,6 +368,7 @@ document.getElementById("sort").addEventListener("change", e => {
    INIT
 ========================= */
 
+initTags();
 render();
 randomSpotlight();
 
