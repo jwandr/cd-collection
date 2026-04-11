@@ -3,423 +3,478 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>The CD Vault</title>
-
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  /* =========================
-     GLOBAL RESET (IMPORTANT)
-  ========================= */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-  * {
-    box-sizing: border-box;
+  :root {
+    --bg:         #f4f4f0;
+    --surface:    #ffffff;
+    --border:     #e4e4de;
+    --text:       #1a1a1a;
+    --muted:      #888;
+    --accent:     #2563eb;
+    --accent-bg:  #eff4ff;
+    --accent-soft:#dbeafe;
+    --green:      #16a34a;
   }
 
   html, body {
-    margin: 0;
-    padding: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
     overflow-x: hidden;
-    font-family: -apple-system, system-ui, sans-serif;
-    background: #fff;
-    color: #111;
+    min-height: 100vh;
   }
 
   header {
-    padding: 20px;
+    padding: 28px 20px 0;
     text-align: center;
   }
 
   h1 {
-    margin: 0;
-    font-size: 28px;
+    font-size: clamp(22px, 5vw, 34px);
+    font-weight: 600;
+    letter-spacing: -0.5px;
   }
 
-  /* =========================
-     CONTROLS (FIXED GRID)
-  ========================= */
-
-  .controls {
-    display: grid;
-    grid-template-columns: 1fr 180px 140px;
-    gap: 10px;
-    padding: 10px 16px;
-    align-items: center;
-  }
-
-  .search-wrapper {
-    position: relative;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .search-wrapper input {
-    width: 100%;
-    padding: 10px 10px 10px 34px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    opacity: 0.5;
-    font-size: 14px;
-  }
-
-  select, button {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    font-size: 14px;
-    cursor: pointer;
-    width: 100%;
-  }
-
-  /* =========================
-     FILTERS
-  ========================= */
-
-  .filters {
-    overflow: hidden;
-    transition: all 0.25s ease;
-  }
-
-  .filters.hidden {
-    max-height: 0;
-    opacity: 0;
-    padding: 0 16px;
-  }
-
-  .filters.open {
-    max-height: 220px;
-    opacity: 1;
-    padding: 10px 16px;
-  }
-
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-  }
-
-  .tag {
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid #ccc;
-    cursor: pointer;
+  .album-count {
     font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.4px;
   }
 
-  .tag.active {
-    background: #111;
-    color: #fff;
-  }
-
-  /* =========================
-     SPOTLIGHT
-  ========================= */
-
+  /* SPOTLIGHT */
   .spotlight {
     display: flex;
     justify-content: center;
     padding: 20px 20px 0;
   }
 
-  .spotlight-layout {
+  .spotlight-inner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    gap: 14px;
+    max-width: 320px;
     width: 100%;
-    max-width: 420px;
   }
 
   .spotlight-card {
-    width: 220px;
-    text-align: center;
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
     cursor: pointer;
+    text-align: center;
+    transition: box-shadow 0.2s;
+  }
+
+  .spotlight-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+
+  .spotlight-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--accent);
+    margin-bottom: 10px;
   }
 
   .spotlight-card img {
     width: 100%;
-    border-radius: 12px;
+    border-radius: 8px;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    display: block;
+  }
+
+  .spotlight-card .s-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .spotlight-card .s-artist {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .spotlight-card .year-tag {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+
+  .spotify-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--green);
   }
 
   .shuffle-btn {
-    height: 42px;
     width: 42px;
+    height: 42px;
     border-radius: 50%;
-    border: 1px solid #ddd;
-    background: white;
+    border: 1px solid var(--border);
+    background: var(--surface);
     cursor: pointer;
-    font-size: 18px;
+    font-size: 17px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.2s;
   }
 
-  /* =========================
-     GRID
-  ========================= */
+  .shuffle-btn:hover {
+    background: var(--accent-bg);
+    transform: rotate(25deg);
+  }
 
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 20px 0;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 12px 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .search-wrapper { position: relative; }
+
+  .search-wrapper input {
+    width: 100%;
+    padding: 10px 14px 10px 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-wrapper input::placeholder { color: #aaa; }
+  .search-wrapper input:focus { border-color: var(--accent); }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    opacity: 0.35;
+  }
+
+  .ctrl-row { display: flex; gap: 6px; }
+
+  .sort-pill {
+    flex: 1;
+    padding: 8px 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+
+  .sort-pill.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .sort-pill:hover:not(.active) { border-color: #bbb; color: var(--text); }
+
+  .genre-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+
+  .genre-btn:hover, .genre-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  /* FILTERS */
+  .filters { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; }
+  .filters.hidden { max-height: 0; opacity: 0; }
+  .filters.open   { max-height: 300px; opacity: 1; padding: 8px 16px 0; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag {
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.15s;
+  }
+
+  .tag:hover { border-color: #bbb; color: var(--text); }
+  .tag.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  /* GRID */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
     padding: 16px;
   }
 
-  .tile {
-    cursor: pointer;
-    transition: transform 0.15s ease;
-  }
+  .tile { cursor: pointer; transition: transform 0.15s; }
+  .tile:hover { transform: scale(1.04); }
+  .tile:active { transform: scale(0.97); }
 
-  .tile:hover {
-    transform: scale(1.05);
-  }
-
-  .tile:active {
-    transform: scale(0.96);
-  }
-
-  img {
+  .tile img {
     width: 100%;
-    border-radius: 12px;
-    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    aspect-ratio: 1/1;
     object-fit: cover;
+    display: block;
+    border: 1px solid var(--border);
   }
 
-  .title {
-    font-size: 13px;
+  .tile .title {
+    font-size: 12px;
+    font-weight: 600;
     margin-top: 6px;
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  .artist {
+  .tile .artist {
     font-size: 11px;
-    opacity: 0.7;
+    color: var(--muted);
     text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
   }
 
   .section-tile {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f3f3f3;
-    border-radius: 12px;
-    aspect-ratio: 1 / 1;
-    font-size: clamp(22px, 3vw, 36px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    aspect-ratio: 1/1;
+    font-size: clamp(20px, 3vw, 30px);
     font-weight: 600;
+    color: var(--accent);
+    cursor: default;
   }
 
-  /* =========================
-     MOBILE FIX
-  ========================= */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+    font-size: 14px;
+  }
 
-  @media (max-width: 768px) {
+  @media (min-width: 600px) {
+    .controls { flex-direction: row; align-items: center; flex-wrap: wrap; }
+    .search-wrapper { flex: 1; min-width: 180px; }
+    .ctrl-row { flex-shrink: 0; }
+    .sort-pill { padding: 8px 16px; font-size: 13px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  }
 
-    h1 {
-      font-size: 22px;
-    }
-
-    .controls {
-      grid-template-columns: 1fr;
-    }
-
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 12px;
-    }
-
-    .spotlight-card {
-      width: 160px;
-    }
-
-    .spotlight-layout {
-      justify-content: center;
-    }
+  @media (min-width: 900px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
   }
 </style>
 </head>
-
 <body>
 
 <header>
   <h1>The CD Vault</h1>
+  <div class="album-count" id="albumCount"></div>
 </header>
 
-<!-- SPOTLIGHT -->
 <div id="spotlight" class="spotlight"></div>
 
-<!-- CONTROLS -->
-<div class="controls">
+<hr>
 
+<div class="controls">
   <div class="search-wrapper">
     <span class="search-icon">🔍</span>
-    <input id="search" placeholder="Search album or artist..." />
+    <input id="search" placeholder="Search album or artist…" autocomplete="off">
   </div>
-
-  <select id="sort">
-    <option value="artist">↕️ Sort: Artist A–Z</option>
-    <option value="album">↕️ Sort: Album A–Z</option>
-    <option value="year">↕️ Sort: Year</option>
-  </select>
-
-  <button id="filterBtn" onclick="toggleFilters()">⏷ Filters</button>
-
+  <div class="ctrl-row">
+    <button class="sort-pill active" data-sort="artist">Artist</button>
+    <button class="sort-pill" data-sort="album">Album</button>
+    <button class="sort-pill" data-sort="year">Year</button>
+  </div>
+  <div class="ctrl-row">
+    <button id="filterBtn" class="genre-btn" onclick="toggleFilters()">Genres</button>
+  </div>
 </div>
 
-<!-- FILTERS -->
 <div id="filters" class="filters hidden">
   <div id="tags" class="tags"></div>
 </div>
 
-<!-- GRID -->
 <div id="grid" class="grid"></div>
 
 <script src="albums.js"></script>
-
 <script>
-const state = {
-  search: "",
-  sort: "artist",
-  activeTags: new Set(),
-  spotlight: null
-};
+const state = { search: "", sort: "artist", activeTags: new Set(), spotlight: null };
 
-/* HELPERS */
-function normalize(text) {
-  return text.toLowerCase().replace(/^the\s+/i, "");
-}
+function normalize(t) { return t.toLowerCase().replace(/^the\s+/i, ""); }
+function getLetter(t) { return normalize(t)[0]?.toUpperCase() || "#"; }
+function getDecade(y) { return y ? `${Math.floor(y / 10) * 10}s` : "?"; }
+function trim(t) { return t.trim(); }
 
-function getLetter(text) {
-  return normalize(text)[0]?.toUpperCase() || "#";
-}
-
-function getDecade(year) {
-  return year ? `${Math.floor(year / 10) * 10}s` : "Unknown";
-}
-
-/* FILTER TOGGLE */
 function toggleFilters() {
   const el = document.getElementById("filters");
   el.classList.toggle("hidden");
   el.classList.toggle("open");
 }
 
-/* TAGS */
 function initTags() {
-  const uniqueTags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
+  const tags = [...new Set(albums.flatMap(a => (a.tags || []).map(trim)))].filter(Boolean).sort();
   const container = document.getElementById("tags");
-
-  uniqueTags.forEach(tag => {
-    const el = document.createElement("div");
+  tags.forEach(tag => {
+    const el = document.createElement("button");
     el.className = "tag";
     el.textContent = tag;
-
     el.onclick = () => {
-      if (state.activeTags.has(tag)) {
-        state.activeTags.delete(tag);
-        el.classList.remove("active");
-      } else {
-        state.activeTags.add(tag);
-        el.classList.add("active");
-      }
-      updateFilterButton();
+      state.activeTags.has(tag) ? state.activeTags.delete(tag) : state.activeTags.add(tag);
+      el.classList.toggle("active");
+      updateGenreBtn();
       render();
     };
-
     container.appendChild(el);
   });
 }
 
-function updateFilterButton() {
+function updateGenreBtn() {
+  const n = state.activeTags.size;
   const btn = document.getElementById("filterBtn");
-  const count = state.activeTags.size;
-
-  btn.textContent = count > 0
-    ? `⏷ Filters (${count})`
-    : `⏷ Filters`;
+  btn.textContent = n > 0 ? `Genres (${n})` : "Genres";
+  btn.classList.toggle("active", n > 0);
 }
 
-/* DATA */
-function getFilteredAlbums() {
+function getFiltered() {
   return albums
     .filter(a => {
-      const matchesSearch =
-        (a.album + a.artist)
-          .toLowerCase()
-          .includes(state.search.toLowerCase());
-
-      const matchesTags =
-        state.activeTags.size === 0 ||
-        [...state.activeTags].every(tag =>
-          (a.tags || []).includes(tag)
-        );
-
-      return matchesSearch && matchesTags;
+      const q = state.search.toLowerCase();
+      const matchSearch = a.album.toLowerCase().includes(q) || a.artist.toLowerCase().includes(q);
+      const matchTags = state.activeTags.size === 0 ||
+        [...state.activeTags].every(t => (a.tags || []).map(trim).includes(t));
+      return matchSearch && matchTags;
     })
     .sort((a, b) => {
-      switch (state.sort) {
-        case "artist":
-          return normalize(a.artist).localeCompare(normalize(b.artist));
-        case "album":
-          return normalize(a.album).localeCompare(normalize(b.album));
-        case "year":
-          return (a.year || 0) - (b.year || 0);
-        default:
-          return 0;
-      }
+      if (state.sort === "artist") return normalize(a.artist).localeCompare(normalize(b.artist));
+      if (state.sort === "album")  return normalize(a.album).localeCompare(normalize(b.album));
+      if (state.sort === "year")   return (a.year || 0) - (b.year || 0);
+      return 0;
     });
 }
 
-/* SPOTLIGHT */
+function updateCount(list) {
+  const el = document.getElementById("albumCount");
+  el.textContent = list.length === albums.length
+    ? `${albums.length} albums`
+    : `Showing ${list.length} of ${albums.length}`;
+}
+
 function shuffleSpotlight() {
-  const list = getFilteredAlbums();
+  const list = getFiltered();
+  if (!list.length) return;
   state.spotlight = list[Math.floor(Math.random() * list.length)];
   renderSpotlight();
 }
 
 function renderSpotlight() {
   const el = document.getElementById("spotlight");
-
-  if (!state.spotlight) return (el.innerHTML = "");
-
+  if (!state.spotlight) return;
   const a = state.spotlight;
-
   el.innerHTML = `
-    <div class="spotlight-layout">
-      <div style="width:42px;"></div>
-
-      <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
-        <img src="${a.image}">
-        <div class="title">${a.album}</div>
-        <div class="artist">${a.artist}</div>
+    <div class="spotlight-inner">
+      <button class="shuffle-btn" onclick="shuffleSpotlight()" title="Shuffle">🎲</button>
+      <div class="spotlight-card" onclick="window.open('${a.spotify}','_blank')">
+        <div class="spotlight-label">Featured</div>
+        <img src="${a.image}" alt="${a.album}">
+        <div class="s-title">${a.album}</div>
+        <div class="s-artist">${a.artist}</div>
+        ${a.year ? `<div class="year-tag">${a.year}</div>` : ""}
+        <div class="spotify-link">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.779.779 0 01-1.072.257c-2.687-1.652-6.785-2.13-9.965-1.166a.779.779 0 01-.973-.519.78.78 0 01.519-.972c3.632-1.102 8.147-.568 11.234 1.328a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.935.935 0 11-.543-1.79c3.533-1.072 9.404-.865 13.115 1.338a.936.936 0 01-.955 1.609z"/></svg>
+          Play on Spotify
+        </div>
       </div>
-
-      <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
-    </div>
-  `;
+    </div>`;
 }
 
-/* GRID */
 function render() {
   const grid = document.getElementById("grid");
-  const list = getFilteredAlbums();
-
+  const list = getFiltered();
+  updateCount(list);
   grid.innerHTML = "";
 
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty-state">No albums match your search.</div>`;
+    return;
+  }
+
   let lastSection = null;
-
   list.forEach(a => {
-
-    let section;
-
-    if (state.sort === "artist") section = getLetter(a.artist);
-    else if (state.sort === "album") section = getLetter(a.album);
-    else if (state.sort === "year") section = getDecade(a.year);
+    const section = state.sort === "year" ? getDecade(a.year)
+      : state.sort === "album" ? getLetter(a.album)
+      : getLetter(a.artist);
 
     if (section !== lastSection) {
       const s = document.createElement("div");
@@ -431,36 +486,35 @@ function render() {
 
     const div = document.createElement("div");
     div.className = "tile";
-
+    div.tabIndex = 0;
     div.innerHTML = `
-      <img src="${a.image}">
+      <img src="${a.image}" alt="${a.album}" loading="lazy">
       <div class="title">${a.album}</div>
-      <div class="artist">${a.artist}</div>
-    `;
-
+      <div class="artist">${a.artist}</div>`;
     div.onclick = () => window.open(a.spotify, "_blank");
-
+    div.onkeydown = e => { if (e.key === "Enter" || e.key === " ") window.open(a.spotify, "_blank"); };
     grid.appendChild(div);
   });
 }
 
-/* EVENTS */
+document.querySelectorAll(".sort-pill").forEach(p => {
+  p.addEventListener("click", () => {
+    document.querySelectorAll(".sort-pill").forEach(x => x.classList.remove("active"));
+    p.classList.add("active");
+    state.sort = p.dataset.sort;
+    render();
+  });
+});
+
 document.getElementById("search").addEventListener("input", e => {
   state.search = e.target.value;
   render();
 });
 
-document.getElementById("sort").addEventListener("change", e => {
-  state.sort = e.target.value;
-  render();
-});
-
-/* INIT */
 initTags();
-updateFilterButton();
+updateGenreBtn();
 render();
 shuffleSpotlight();
 </script>
-
 </body>
 </html>
