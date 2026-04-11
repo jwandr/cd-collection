@@ -24,5 +24,13 @@ const albums = [
     tags: ["alternative", "experimental", "dreamy"],
     image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
     spotify: "https://open.spotify.com/album/5vkqYmi5m8fG8v7y7f7f7f"
+  },
+  {
+    album: "Jollification",
+    artist: "The Lightning Seeds",
+    year: 1994,
+    tags: ["Jeff","Things"],
+    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c14763d9328c629961e15dcb",
+    spotify: "https://open.spotify.com/album/2aPTNYJ6MjDj7UvIHnJs26?si=qJvDSnBPTDia1_7FJ8nrPg"
   }
 ];
