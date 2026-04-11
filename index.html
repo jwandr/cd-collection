@@ -8,8 +8,8 @@
   body {
     margin: 0;
     font-family: -apple-system, system-ui, sans-serif;
-    background: #121212;
-    color: white;
+    background: #ffffff;
+    color: #111;
   }
 
   header {
@@ -33,11 +33,17 @@
   input, select, button {
     padding: 8px 10px;
     border-radius: 8px;
-    border: none;
+    border: 1px solid #ddd;
+    background: white;
+    color: #111;
     outline: none;
   }
 
-  /* 🏷 TAGS */
+  button {
+    cursor: pointer;
+  }
+
+  /* TAGS */
   .tags {
     display: flex;
     flex-wrap: wrap;
@@ -49,7 +55,7 @@
   .tag {
     padding: 6px 10px;
     border-radius: 999px;
-    border: 1px solid #444;
+    border: 1px solid #ccc;
     cursor: pointer;
     font-size: 12px;
     user-select: none;
@@ -57,11 +63,11 @@
   }
 
   .tag.active {
-    background: white;
-    color: black;
+    background: #111;
+    color: #fff;
   }
 
-  /* 🎯 SPOTLIGHT */
+  /* SPOTLIGHT */
   .spotlight {
     display: flex;
     justify-content: center;
@@ -79,7 +85,7 @@
     border-radius: 12px;
   }
 
-  /* 🧱 GRID */
+  /* GRID */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -115,25 +121,23 @@
     text-align: center;
   }
 
-  /* 🔲 SECTION TILE */
+  /* SECTION TILE (UPDATED) */
   .section-tile {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #1e1e1e;
+    background: #f3f3f3;
     border-radius: 12px;
     aspect-ratio: 1 / 1;
-    font-size: 22px;
-    font-weight: bold;
-    color: #aaa;
+
+    font-weight: 600;
+    color: #111;
+
+    /* responsive typography */
+    font-size: clamp(22px, 3vw, 36px);
+    letter-spacing: 1px;
   }
 
-  .section-sub {
-    font-size: 10px;
-    opacity: 0.6;
-    margin-top: 4px;
-    text-align: center;
-  }
 </style>
 </head>
 
@@ -164,10 +168,6 @@
 <script src="albums.js"></script>
 
 <script>
-/* =========================
-   STATE
-========================= */
-
 let state = {
   search: "",
   sort: "album",
@@ -175,23 +175,18 @@ let state = {
   spotlight: null
 };
 
-/* =========================
-   HELPERS
-========================= */
-
 function normalize(t) {
   return t.toLowerCase().replace(/^the\s+/i, "");
 }
 
-function letter(a) {
-  return normalize(a)[0].toUpperCase();
+function letter(t) {
+  return normalize(t)[0].toUpperCase();
 }
 
 function decade(y) {
   return y ? `${Math.floor(y / 10) * 10}s` : "Unknown";
 }
 
-/* simple colour sort */
 function colorScore(hex) {
   if (!hex) return 999;
   const c = hex.replace("#", "");
@@ -201,13 +196,9 @@ function colorScore(hex) {
   return Math.atan2(Math.sqrt(3)*(g-b), 2*r-g-b);
 }
 
-/* =========================
-   TAGS INIT
-========================= */
-
+/* TAGS */
 function initTags() {
   const tags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
-
   const wrap = document.getElementById("tags");
 
   tags.forEach(tag => {
@@ -230,14 +221,10 @@ function initTags() {
   });
 }
 
-/* =========================
-   FILTER
-========================= */
-
+/* FILTER */
 function getFiltered() {
   return albums
     .filter(a => {
-
       const matchesSearch =
         (a.album + a.artist)
           .toLowerCase()
@@ -252,9 +239,7 @@ function getFiltered() {
       return matchesSearch && matchesTags;
     })
     .sort((a, b) => {
-
       switch (state.sort) {
-
         case "artist":
           return normalize(a.artist).localeCompare(normalize(b.artist));
 
@@ -270,10 +255,7 @@ function getFiltered() {
     });
 }
 
-/* =========================
-   SPOTLIGHT
-========================= */
-
+/* SPOTLIGHT */
 function randomSpotlight() {
   const list = getFiltered();
   state.spotlight = list[Math.floor(Math.random() * list.length)];
@@ -282,11 +264,7 @@ function randomSpotlight() {
 
 function renderSpotlight() {
   const el = document.getElementById("spotlight");
-
-  if (!state.spotlight) {
-    el.innerHTML = "";
-    return;
-  }
+  if (!state.spotlight) return (el.innerHTML = "");
 
   const a = state.spotlight;
 
@@ -299,10 +277,7 @@ function renderSpotlight() {
   `;
 }
 
-/* =========================
-   GRID
-========================= */
-
+/* GRID */
 function render() {
   const grid = document.getElementById("grid");
   const list = getFiltered();
@@ -323,14 +298,7 @@ function render() {
     if (section !== last) {
       const s = document.createElement("div");
       s.className = "tile section-tile";
-
-      s.innerHTML = `
-        <div>
-          ${section}
-          <div class="section-sub">${state.sort === "year" ? section : ""}</div>
-        </div>
-      `;
-
+      s.textContent = section;
       grid.appendChild(s);
       last = section;
     }
@@ -350,10 +318,7 @@ function render() {
   });
 }
 
-/* =========================
-   EVENTS
-========================= */
-
+/* EVENTS */
 document.getElementById("search").addEventListener("input", e => {
   state.search = e.target.value;
   render();
@@ -364,10 +329,7 @@ document.getElementById("sort").addEventListener("change", e => {
   render();
 });
 
-/* =========================
-   INIT
-========================= */
-
+/* INIT */
 initTags();
 render();
 randomSpotlight();
