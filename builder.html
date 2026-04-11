@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CD Vault Builder</title>
+
+<style>
+  body {
+    font-family: system-ui;
+    background: #121212;
+    color: white;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  input, button {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+  }
+
+  button {
+    cursor: pointer;
+    background: white;
+    color: black;
+    font-weight: bold;
+  }
+
+  pre {
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 10px;
+    overflow: auto;
+  }
+
+  .card {
+    margin-top: 20px;
+    padding: 15px;
+    background: #1e1e1e;
+    border-radius: 10px;
+  }
+
+  img {
+    width: 120px;
+    border-radius: 10px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>CD Vault Builder</h1>
+
+<input id="url" placeholder="Paste Spotify album URL..." />
+<button onclick="fetchAlbum()">Fetch Album</button>
+
+<div id="output"></div>
+
+<script>
+async function fetchAlbum() {
+  const url = document.getElementById("url").value;
+
+  const res = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(url));
+  const data = await res.json();
+
+  // parse artist/title from HTML-ish structure
+  const title = data.title;
+  const artist = data.author_name;
+  const image = data.thumbnail_url;
+
+  const albumObj = {
+    album: title,
+    artist: artist,
+    year: null,
+    tags: [],
+    image: image,
+    spotify: url
+  };
+
+  document.getElementById("output").innerHTML = `
+    <div class="card">
+      <img src="${image}" />
+      <h3>${title}</h3>
+      <p>${artist}</p>
+      <pre>${JSON.stringify(albumObj, null, 2)}</pre>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>
