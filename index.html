@@ -5,161 +5,143 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The CD Vault</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg:         #f4f4f0;
-    --surface:    #ffffff;
-    --border:     #e4e4de;
-    --text:       #1a1a1a;
-    --muted:      #888;
-    --accent:     #2563eb;
-    --accent-bg:  #eff4ff;
-    --accent-soft:#dbeafe;
-    --green:      #16a34a;
+    --bg:          #f0efeb;
+    --surface:     #ffffff;
+    --border:      #e2e1db;
+    --border-mid:  #c8c7c0;
+    --text:        #18181b;
+    --muted:       #8a8a8a;
+    --subtle:      #b0afa8;
+    --dark:        #18181b;
+    --dark-hover:  #2c2c30;
+    --accent:      #0f9e7b;
+    --accent-soft: #e6f6f2;
   }
 
   html, body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
     overflow-x: hidden;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
 
+  /* ── HEADER ── */
   header {
-    padding: 28px 20px 0;
+    padding: 32px 24px 0;
     text-align: center;
   }
 
   h1 {
-    font-size: clamp(22px, 5vw, 34px);
+    font-size: clamp(20px, 4.5vw, 32px);
     font-weight: 600;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.6px;
+    color: var(--text);
   }
 
   .album-count {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 4px;
-    letter-spacing: 0.4px;
+    font-size: 11px;
+    color: var(--subtle);
+    margin-top: 5px;
+    letter-spacing: 0.5px;
+    font-weight: 400;
   }
 
-  /* SPOTLIGHT */
+  /* ── SPOTLIGHT ── */
   .spotlight {
     display: flex;
     justify-content: center;
-    padding: 20px 20px 0;
+    padding: 24px 24px 0;
   }
 
-  .spotlight-inner {
+  .spotlight-wrap {
+    position: relative;
+    width: 180px;
+    text-align: center;
+  }
+
+  .shuffle-btn {
+    position: absolute;
+    top: 50%;
+    right: -52px;
+    transform: translateY(-60%);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border-mid);
+    background: var(--surface);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 14px;
-    max-width: 320px;
-    width: 100%;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.25s;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .shuffle-btn:hover {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #fff;
+    transform: translateY(-60%) rotate(180deg);
   }
 
   .spotlight-card {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 12px;
     cursor: pointer;
-    text-align: center;
-    transition: box-shadow 0.2s;
-  }
-
-  .spotlight-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
-
-  .spotlight-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--accent);
-    margin-bottom: 10px;
+    display: block;
   }
 
   .spotlight-card img {
     width: 100%;
-    border-radius: 8px;
+    border-radius: 10px;
     aspect-ratio: 1/1;
     object-fit: cover;
     display: block;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .spotlight-card:hover img {
+    transform: scale(1.03);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.14);
   }
 
   .spotlight-card .s-title {
     font-size: 13px;
     font-weight: 600;
-    margin-top: 8px;
+    margin-top: 10px;
+    color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .spotlight-card .s-artist {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--muted);
     margin-top: 2px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 400;
   }
 
-  .spotlight-card .year-tag {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--accent);
-    background: var(--accent-bg);
-    padding: 2px 8px;
-    border-radius: 999px;
-  }
-
-  .spotify-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--green);
-  }
-
-  .shuffle-btn {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    font-size: 17px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s, transform 0.2s;
-  }
-
-  .shuffle-btn:hover {
-    background: var(--accent-bg);
-    transform: rotate(25deg);
-  }
-
+  /* ── RULE ── */
   hr {
     border: none;
     border-top: 1px solid var(--border);
-    margin: 20px 20px 0;
+    margin: 24px 24px 0;
   }
 
-  /* CONTROLS */
+  /* ── CONTROLS ── */
   .controls {
-    padding: 12px 16px 0;
+    padding: 14px 16px 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -174,48 +156,55 @@
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
     outline: none;
     transition: border-color 0.15s;
+    font-weight: 400;
   }
 
-  .search-wrapper input::placeholder { color: #aaa; }
-  .search-wrapper input:focus { border-color: var(--accent); }
+  .search-wrapper input::placeholder { color: var(--subtle); }
+  .search-wrapper input:focus { border-color: var(--border-mid); }
 
   .search-icon {
     position: absolute;
     left: 12px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 13px;
-    opacity: 0.35;
+    color: var(--subtle);
+    display: flex;
+    align-items: center;
   }
 
   .ctrl-row { display: flex; gap: 6px; }
 
+  /* Dark sort pills */
   .sort-pill {
     flex: 1;
-    padding: 8px 8px;
+    padding: 8px 10px;
     border-radius: 8px;
-    border: 1px solid var(--border);
+    border: 1px solid transparent;
     background: var(--surface);
     color: var(--muted);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s;
+    border: 1px solid var(--border);
   }
 
   .sort-pill.active {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #f0efeb;
   }
 
-  .sort-pill:hover:not(.active) { border-color: #bbb; color: var(--text); }
+  .sort-pill:hover:not(.active) {
+    border-color: var(--border-mid);
+    color: var(--text);
+  }
 
   .genre-btn {
     padding: 8px 16px;
@@ -223,7 +212,7 @@
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--muted);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
@@ -232,15 +221,15 @@
   }
 
   .genre-btn:hover, .genre-btn.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: var(--accent-bg);
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #f0efeb;
   }
 
-  /* FILTERS */
-  .filters { overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; }
+  /* ── FILTERS ── */
+  .filters { overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease; }
   .filters.hidden { max-height: 0; opacity: 0; }
-  .filters.open   { max-height: 300px; opacity: 1; padding: 8px 16px 0; }
+  .filters.open   { max-height: 300px; opacity: 1; padding: 10px 16px 0; }
 
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
@@ -250,25 +239,35 @@
     border: 1px solid var(--border);
     background: var(--surface);
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     color: var(--muted);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     transition: all 0.15s;
+    letter-spacing: 0.1px;
   }
 
-  .tag:hover { border-color: #bbb; color: var(--text); }
-  .tag.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .tag:hover { border-color: var(--border-mid); color: var(--text); }
 
-  /* GRID */
+  .tag.active {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #f0efeb;
+  }
+
+  /* ── GRID ── */
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 12px;
+    gap: 14px;
     padding: 16px;
   }
 
-  .tile { cursor: pointer; transition: transform 0.15s; }
+  .tile {
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
   .tile:hover { transform: scale(1.04); }
   .tile:active { transform: scale(0.97); }
 
@@ -278,17 +277,18 @@
     aspect-ratio: 1/1;
     object-fit: cover;
     display: block;
-    border: 1px solid var(--border);
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
   }
 
   .tile .title {
     font-size: 12px;
     font-weight: 600;
-    margin-top: 6px;
+    margin-top: 7px;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text);
   }
 
   .tile .artist {
@@ -298,41 +298,48 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 1px;
+    margin-top: 2px;
+    font-weight: 400;
   }
 
   .section-tile {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--dark);
     border-radius: 8px;
     aspect-ratio: 1/1;
-    font-size: clamp(20px, 3vw, 30px);
+    font-size: clamp(18px, 2.8vw, 28px);
     font-weight: 600;
-    color: var(--accent);
+    color: #f0efeb;
     cursor: default;
+    letter-spacing: -0.5px;
+    opacity: 0.88;
   }
 
   .empty-state {
-    grid-column: 1 / -1;
+    grid-column: 1/-1;
     text-align: center;
     padding: 60px 20px;
-    color: var(--muted);
-    font-size: 14px;
+    color: var(--subtle);
+    font-size: 13px;
   }
 
+  /* ── RESPONSIVE ── */
   @media (min-width: 600px) {
     .controls { flex-direction: row; align-items: center; flex-wrap: wrap; }
     .search-wrapper { flex: 1; min-width: 180px; }
     .ctrl-row { flex-shrink: 0; }
-    .sort-pill { padding: 8px 16px; font-size: 13px; }
-    .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    .sort-pill { font-size: 13px; padding: 8px 16px; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
+
+    .spotlight-wrap { width: 200px; }
+    .shuffle-btn { right: -52px; }
   }
 
   @media (min-width: 900px) {
-    .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(162px, 1fr)); }
+    .spotlight-wrap { width: 220px; }
   }
 </style>
 </head>
@@ -349,7 +356,11 @@
 
 <div class="controls">
   <div class="search-wrapper">
-    <span class="search-icon">🔍</span>
+    <span class="search-icon">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </span>
     <input id="search" placeholder="Search album or artist…" autocomplete="off">
   </div>
   <div class="ctrl-row">
@@ -367,6 +378,16 @@
 </div>
 
 <div id="grid" class="grid"></div>
+
+<!-- Shuffle SVG icon (defined once, reused) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="icon-shuffle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="16 3 21 3 21 8"/>
+    <line x1="4" y1="20" x2="21" y2="3"/>
+    <polyline points="21 16 21 21 16 21"/>
+    <line x1="15" y1="15" x2="21" y2="21"/>
+  </symbol>
+</svg>
 
 <script src="albums.js"></script>
 <script>
@@ -434,7 +455,10 @@ function updateCount(list) {
 function shuffleSpotlight() {
   const list = getFiltered();
   if (!list.length) return;
-  state.spotlight = list[Math.floor(Math.random() * list.length)];
+  let pick;
+  do { pick = list[Math.floor(Math.random() * list.length)]; }
+  while (list.length > 1 && pick === state.spotlight);
+  state.spotlight = pick;
   renderSpotlight();
 }
 
@@ -443,19 +467,15 @@ function renderSpotlight() {
   if (!state.spotlight) return;
   const a = state.spotlight;
   el.innerHTML = `
-    <div class="spotlight-inner">
-      <button class="shuffle-btn" onclick="shuffleSpotlight()" title="Shuffle">🎲</button>
-      <div class="spotlight-card" onclick="window.open('${a.spotify}','_blank')">
-        <div class="spotlight-label">Featured</div>
+    <div class="spotlight-wrap">
+      <a class="spotlight-card" onclick="window.open('${a.spotify}','_blank')" role="link">
         <img src="${a.image}" alt="${a.album}">
         <div class="s-title">${a.album}</div>
         <div class="s-artist">${a.artist}</div>
-        ${a.year ? `<div class="year-tag">${a.year}</div>` : ""}
-        <div class="spotify-link">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.622.622 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.622.622 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.722a.779.779 0 01-1.072.257c-2.687-1.652-6.785-2.13-9.965-1.166a.779.779 0 01-.973-.519.78.78 0 01.519-.972c3.632-1.102 8.147-.568 11.234 1.328a.78.78 0 01.257 1.072zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71a.935.935 0 11-.543-1.79c3.533-1.072 9.404-.865 13.115 1.338a.936.936 0 01-.955 1.609z"/></svg>
-          Play on Spotify
-        </div>
-      </div>
+      </a>
+      <button class="shuffle-btn" onclick="shuffleSpotlight()" title="Shuffle">
+        <svg width="16" height="16"><use href="#icon-shuffle"/></svg>
+      </button>
     </div>`;
 }
 
