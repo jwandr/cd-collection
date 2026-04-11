@@ -91,6 +91,12 @@
     padding: 10px 20px 0;
   }
 
+  .spotlight-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
   .spotlight-card {
     width: 220px;
     cursor: pointer;
@@ -100,6 +106,16 @@
   .spotlight-card img {
     width: 100%;
     border-radius: 12px;
+  }
+
+  .shuffle-btn {
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: white;
+    cursor: pointer;
+    font-size: 18px;
   }
 
   /* GRID */
@@ -174,6 +190,10 @@
       gap: 12px;
     }
 
+    .spotlight-wrapper {
+      justify-content: center;
+    }
+
     .spotlight-card {
       width: 160px;
     }
@@ -203,7 +223,6 @@
   </select>
 
   <button id="filterBtn" onclick="toggleFilters()">🔎 Filters</button>
-  <button onclick="shuffleSpotlight()">🎲 Shuffle</button>
 </div>
 
 <div id="filters" class="filters hidden">
@@ -323,10 +342,13 @@ function renderSpotlight() {
   const a = state.spotlight;
 
   el.innerHTML = `
-    <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
-      <img src="${a.image}">
-      <div class="title">${a.album}</div>
-      <div class="artist">${a.artist}</div>
+    <div class="spotlight-wrapper">
+      <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
+        <img src="${a.image}">
+        <div class="title">${a.album}</div>
+        <div class="artist">${a.artist}</div>
+      </div>
+      <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
     </div>
   `;
 }
