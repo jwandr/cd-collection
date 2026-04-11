@@ -92,6 +92,15 @@
     transform: translateY(-60%) rotate(180deg);
   }
 
+  .spotlight-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--subtle);
+    margin-bottom: 12px;
+  }
+
   .spotlight-card {
     cursor: pointer;
     display: block;
@@ -266,6 +275,8 @@
   .tile {
     cursor: pointer;
     transition: transform 0.15s;
+    text-decoration: none;
+    display: block;
   }
 
   .tile:hover { transform: scale(1.04); }
@@ -303,18 +314,29 @@
   }
 
   .section-tile {
+    grid-column: 1 / -1;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: var(--dark);
-    border-radius: 8px;
-    aspect-ratio: 1/1;
-    font-size: clamp(18px, 2.8vw, 28px);
-    font-weight: 600;
-    color: #f0efeb;
+    gap: 14px;
+    padding: 10px 4px 6px;
+    border-top: 1px solid var(--border-mid);
     cursor: default;
-    letter-spacing: -0.5px;
-    opacity: 0.88;
+    margin-top: 4px;
+  }
+
+  .section-tile-letter {
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -1px;
+    line-height: 1;
+    min-width: 24px;
+  }
+
+  .section-tile-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
   }
 
   .empty-state {
@@ -466,12 +488,13 @@ function renderSpotlight() {
   const a = state.spotlight;
   el.innerHTML = `
     <div class="spotlight-wrap">
-      <a class="spotlight-card" onclick="window.open('${a.spotify}','_blank')" role="link">
+      <div class="spotlight-label">What are you in the mood for?</div>
+      <a class="spotlight-card" href="${a.spotify}" target="_blank" rel="noopener">
         <img src="${a.image}" alt="${a.album}">
         <div class="s-title">${a.album}</div>
         <div class="s-artist">${a.artist}</div>
       </a>
-      <button class="shuffle-btn" onclick="shuffleSpotlight()" title="Shuffle">
+      <button class="shuffle-btn" onclick="shuffleSpotlight()" title="Refresh">
         <svg width="16" height="16"><use href="#icon-shuffle"/></svg>
       </button>
     </div>`;
@@ -489,29 +512,29 @@ function render() {
   }
 
   let lastSection = null;
-  list.forEach(a => {
-    const section = state.sort === "year" ? getDecade(a.year)
-      : state.sort === "album" ? getLetter(a.album)
-      : getLetter(a.artist);
+  list.forEach(album => {
+    const section = state.sort === "year" ? getDecade(album.year)
+      : state.sort === "album" ? getLetter(album.album)
+      : getLetter(album.artist);
 
     if (section !== lastSection) {
       const s = document.createElement("div");
       s.className = "tile section-tile";
-      s.textContent = section;
+      s.innerHTML = `<span class="section-tile-letter">${section}</span><span class="section-tile-line"></span>`;
       grid.appendChild(s);
       lastSection = section;
     }
 
-    const div = document.createElement("div");
-    div.className = "tile";
-    div.tabIndex = 0;
-    div.innerHTML = `
-      <img src="${a.image}" alt="${a.album}" loading="lazy">
-      <div class="title">${a.album}</div>
-      <div class="artist">${a.artist}</div>`;
-    div.onclick = () => window.open(a.spotify, "_blank");
-    div.onkeydown = e => { if (e.key === "Enter" || e.key === " ") window.open(a.spotify, "_blank"); };
-    grid.appendChild(div);
+    const a = document.createElement("a");
+    a.className = "tile";
+    a.href = album.spotify;
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.innerHTML = `
+      <img src="${album.image}" alt="${album.album}" loading="lazy">
+      <div class="title">${album.album}</div>
+      <div class="artist">${album.artist}</div>`;
+    grid.appendChild(a);
   });
 }
 
