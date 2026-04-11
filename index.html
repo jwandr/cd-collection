@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>The CD Vault</title>
 
 <style>
@@ -23,6 +24,7 @@
     font-size: 28px;
   }
 
+  /* CONTROLS */
   .controls {
     display: flex;
     flex-wrap: wrap;
@@ -32,24 +34,41 @@
   }
 
   input, select, button {
-    padding: 8px 10px;
+    padding: 10px;
     border-radius: 8px;
     border: 1px solid #ddd;
     background: white;
     color: #111;
+    font-size: 14px;
   }
 
   button {
     cursor: pointer;
   }
 
-  /* TAGS */
+  /* FILTER DRAWER */
+  .filters {
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+
+  .filters.hidden {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 16px;
+  }
+
+  .filters.open {
+    max-height: 200px;
+    opacity: 1;
+    padding: 10px 16px;
+  }
+
   .tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
-    padding: 0 20px 10px;
   }
 
   .tag {
@@ -58,7 +77,6 @@
     border: 1px solid #ccc;
     cursor: pointer;
     font-size: 12px;
-    user-select: none;
   }
 
   .tag.active {
@@ -87,13 +105,6 @@
   /* GRID */
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 18px;
-    padding: 20px;
-  }
-
-  .grid {
-    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 14px;
     padding: 16px;
@@ -101,11 +112,15 @@
 
   .tile {
     cursor: pointer;
-    transition: transform 0.2s ease;
+    transition: transform 0.15s ease;
   }
 
   .tile:hover {
     transform: scale(1.05);
+  }
+
+  .tile:active {
+    transform: scale(0.96);
   }
 
   img {
@@ -139,57 +154,34 @@
     font-weight: 600;
   }
 
-  /* =========================
-   MOBILE OPTIMISATION
-========================= */
+  /* MOBILE */
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 22px;
+    }
 
-@media (max-width: 768px) {
+    .controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
 
-  h1 {
-    font-size: 22px;
+    input, select, button {
+      width: 100%;
+    }
+
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+    }
+
+    .spotlight-card {
+      width: 160px;
+    }
+
+    .section-tile {
+      font-size: clamp(18px, 6vw, 28px);
+    }
   }
-
-  .controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  input, select, button {
-    width: 100%;
-    font-size: 14px;
-  }
-
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-  }
-
-  .title {
-    font-size: 12px;
-  }
-
-  .artist {
-    font-size: 10px;
-  }
-
-  .spotlight-card {
-    width: 160px;
-  }
-
-  .section-tile {
-    font-size: clamp(18px, 6vw, 28px);
-  }
-}
-
-.tile {
-  cursor: pointer;
-  transition: transform 0.15s ease;
-}
-
-.tile:active {
-  transform: scale(0.96);
-}
-
 </style>
 </head>
 
@@ -210,19 +202,19 @@
     <option value="year">Sort: Year</option>
   </select>
 
-  <button onclick="shuffleSpotlight()">🎲 Shuffle Spotlight</button>
+  <button id="filterBtn" onclick="toggleFilters()">🔎 Filters</button>
+  <button onclick="shuffleSpotlight()">🎲 Shuffle</button>
 </div>
 
-<div id="tags" class="tags"></div>
+<div id="filters" class="filters hidden">
+  <div id="tags" class="tags"></div>
+</div>
+
 <div id="grid" class="grid"></div>
 
 <script src="albums.js"></script>
 
 <script>
-/* =========================
-   STATE
-========================= */
-
 const state = {
   search: "",
   sort: "artist",
@@ -230,10 +222,7 @@ const state = {
   spotlight: null
 };
 
-/* =========================
-   HELPERS
-========================= */
-
+/* HELPERS */
 function normalize(text) {
   return text.toLowerCase().replace(/^the\s+/i, "");
 }
@@ -246,10 +235,14 @@ function getDecade(year) {
   return year ? `${Math.floor(year / 10) * 10}s` : "Unknown";
 }
 
-/* =========================
-   TAGS
-========================= */
+/* FILTER TOGGLE */
+function toggleFilters() {
+  const el = document.getElementById("filters");
+  el.classList.toggle("hidden");
+  el.classList.toggle("open");
+}
 
+/* TAGS */
 function initTags() {
   const uniqueTags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
   const container = document.getElementById("tags");
@@ -267,6 +260,7 @@ function initTags() {
         state.activeTags.add(tag);
         el.classList.add("active");
       }
+      updateFilterButton();
       render();
     };
 
@@ -274,10 +268,16 @@ function initTags() {
   });
 }
 
-/* =========================
-   FILTER + SORT
-========================= */
+function updateFilterButton() {
+  const btn = document.getElementById("filterBtn");
+  const count = state.activeTags.size;
 
+  btn.textContent = count > 0
+    ? `🔎 Filters (${count})`
+    : "🔎 Filters";
+}
+
+/* FILTER + SORT */
 function getFilteredAlbums() {
   return albums
     .filter(a => {
@@ -298,23 +298,17 @@ function getFilteredAlbums() {
       switch (state.sort) {
         case "artist":
           return normalize(a.artist).localeCompare(normalize(b.artist));
-
         case "album":
           return normalize(a.album).localeCompare(normalize(b.album));
-
         case "year":
           return (a.year || 0) - (b.year || 0);
-
         default:
           return 0;
       }
     });
 }
 
-/* =========================
-   SPOTLIGHT
-========================= */
-
+/* SPOTLIGHT */
 function shuffleSpotlight() {
   const list = getFilteredAlbums();
   state.spotlight = list[Math.floor(Math.random() * list.length)];
@@ -324,10 +318,7 @@ function shuffleSpotlight() {
 function renderSpotlight() {
   const el = document.getElementById("spotlight");
 
-  if (!state.spotlight) {
-    el.innerHTML = "";
-    return;
-  }
+  if (!state.spotlight) return (el.innerHTML = "");
 
   const a = state.spotlight;
 
@@ -340,10 +331,7 @@ function renderSpotlight() {
   `;
 }
 
-/* =========================
-   GRID RENDER
-========================= */
-
+/* GRID */
 function render() {
   const grid = document.getElementById("grid");
   const list = getFilteredAlbums();
@@ -383,10 +371,7 @@ function render() {
   });
 }
 
-/* =========================
-   EVENTS
-========================= */
-
+/* EVENTS */
 document.getElementById("search").addEventListener("input", e => {
   state.search = e.target.value;
   render();
@@ -397,11 +382,9 @@ document.getElementById("sort").addEventListener("change", e => {
   render();
 });
 
-/* =========================
-   INIT
-========================= */
-
+/* INIT */
 initTags();
+updateFilterButton();
 render();
 shuffleSpotlight();
 
