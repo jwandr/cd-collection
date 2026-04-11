@@ -37,6 +37,29 @@
     outline: none;
   }
 
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    padding: 0 20px 20px;
+  }
+
+  .tag {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid #444;
+    cursor: pointer;
+    font-size: 12px;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+
+  .tag.active {
+    background: white;
+    color: black;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -89,17 +112,16 @@
     <option value="artist">Sort: Artist A–Z</option>
     <option value="year">Sort: Year</option>
   </select>
-
-  <select id="genre">
-    <option value="all">All Genres</option>
-  </select>
 </div>
+
+<div id="tags" class="tags"></div>
 
 <div id="grid" class="grid"></div>
 
 <script>
+
 /* =========================
-   STATIC DATA (EDIT THIS)
+   STATIC DATA (UPDATED)
 ========================= */
 
 const albums = [
@@ -107,7 +129,7 @@ const albums = [
     album: "OK Computer",
     artist: "Radiohead",
     year: 1997,
-    genre: "Alternative",
+    tags: ["alternative", "rock", "classic"],
     image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
     spotify: "https://open.spotify.com/album/4xWXI3gVZ8T7d1xQ7Z5Q5J"
   },
@@ -115,7 +137,7 @@ const albums = [
     album: "Random Access Memories",
     artist: "Daft Punk",
     year: 2013,
-    genre: "Electronic",
+    tags: ["electronic", "funk", "nostalgic"],
     image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
     spotify: "https://open.spotify.com/album/4m2880jivSbbyEGAKfITCa"
   },
@@ -123,7 +145,7 @@ const albums = [
     album: "In Rainbows",
     artist: "Radiohead",
     year: 2007,
-    genre: "Alternative",
+    tags: ["alternative", "experimental", "dreamy"],
     image: "https://i.scdn.co/image/ab67616d0000b273c1b6a2a2f9f4d3f1c8f5c1a2",
     spotify: "https://open.spotify.com/album/5vkqYmi5m8fG8v7y7f7f7f"
   }
@@ -136,27 +158,42 @@ const albums = [
 let state = {
   search: "",
   sort: "album",
-  genre: "all"
+  activeTags: new Set()
 };
 
 /* =========================
-   INIT UI
+   DOM
 ========================= */
 
 const grid = document.getElementById("grid");
 const search = document.getElementById("search");
 const sort = document.getElementById("sort");
-const genre = document.getElementById("genre");
+const tagsContainer = document.getElementById("tags");
 
-/* Populate genres dynamically */
-function initGenres() {
-  const genres = [...new Set(albums.map(a => a.genre))];
+/* =========================
+   INIT TAGS
+========================= */
 
-  genres.forEach(g => {
-    const opt = document.createElement("option");
-    opt.value = g;
-    opt.textContent = g;
-    genre.appendChild(opt);
+function initTags() {
+  const tags = [...new Set(albums.flatMap(a => a.tags))].sort();
+
+  tags.forEach(tag => {
+    const el = document.createElement("div");
+    el.className = "tag";
+    el.textContent = tag;
+
+    el.onclick = () => {
+      if (state.activeTags.has(tag)) {
+        state.activeTags.delete(tag);
+        el.classList.remove("active");
+      } else {
+        state.activeTags.add(tag);
+        el.classList.add("active");
+      }
+      render();
+    };
+
+    tagsContainer.appendChild(el);
   });
 }
 
@@ -171,10 +208,13 @@ function getFilteredAlbums() {
         (a.album + a.artist).toLowerCase()
           .includes(state.search.toLowerCase());
 
-      const matchesGenre =
-        state.genre === "all" || a.genre === state.genre;
+      const matchesTags =
+        state.activeTags.size === 0 ||
+        [...state.activeTags].every(tag =>
+          a.tags.includes(tag)
+        );
 
-      return matchesSearch && matchesGenre;
+      return matchesSearch && matchesTags;
     })
     .sort((a, b) => {
       switch (state.sort) {
@@ -202,7 +242,7 @@ function render() {
     div.className = "album";
 
     div.innerHTML = `
-      <img src="${album.image}" alt="${album.album}">
+      <img src="${album.image}">
       <div class="title">${album.album}</div>
       <div class="artist">${album.artist}</div>
     `;
@@ -227,17 +267,13 @@ sort.addEventListener("change", e => {
   render();
 });
 
-genre.addEventListener("change", e => {
-  state.genre = e.target.value;
-  render();
-});
-
 /* =========================
    START
 ========================= */
 
-initGenres();
+initTags();
 render();
+
 </script>
 
 </body>
