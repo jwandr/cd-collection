@@ -149,11 +149,54 @@
   }
 
   /* ── CONTROLS ── */
+  /* ── STICKY CONTROLS ── */
+  .controls-sticky {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+
   .controls {
-    padding: 14px 16px 0;
+    padding: 12px 16px 0;
     display: flex;
     flex-direction: column;
     gap: 8px;
+  }
+
+  /* ── BACK TO TOP ── */
+  .back-to-top {
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--border-mid);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s, background 0.15s, color 0.15s;
+    z-index: 200;
+  }
+
+  .back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .back-to-top:hover {
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #fff;
   }
 
   .search-wrapper { position: relative; }
@@ -166,7 +209,7 @@
     background: var(--surface);
     color: var(--text);
     font-family: 'Inter', sans-serif;
-    font-size: 13px;
+    font-size: 16px;
     outline: none;
     transition: border-color 0.15s;
     font-weight: 400;
@@ -354,9 +397,9 @@
     .ctrl-row { flex-shrink: 0; }
     .sort-pill { font-size: 13px; padding: 8px 16px; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
-
     .spotlight-wrap { width: 200px; }
     .shuffle-btn { right: -52px; }
+    .back-to-top { bottom: 32px; right: 32px; }
   }
 
   @media (min-width: 900px) {
@@ -376,28 +419,36 @@
 
 <hr>
 
-<div class="controls">
-  <div class="search-wrapper">
-    <span class="search-icon">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-    </span>
-    <input id="search" placeholder="Search album or artist…" autocomplete="off">
+<div class="controls-sticky">
+  <div class="controls">
+    <div class="search-wrapper">
+      <span class="search-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input id="search" placeholder="Search album or artist…" autocomplete="off">
+    </div>
+    <div class="ctrl-row">
+      <button class="sort-pill active" data-sort="artist">Artist</button>
+      <button class="sort-pill" data-sort="album">Album</button>
+      <button class="sort-pill" data-sort="year">Year</button>
+    </div>
+    <div class="ctrl-row">
+      <button id="filterBtn" class="genre-btn" onclick="toggleFilters()">Genres</button>
+    </div>
   </div>
-  <div class="ctrl-row">
-    <button class="sort-pill active" data-sort="artist">Artist</button>
-    <button class="sort-pill" data-sort="album">Album</button>
-    <button class="sort-pill" data-sort="year">Year</button>
-  </div>
-  <div class="ctrl-row">
-    <button id="filterBtn" class="genre-btn" onclick="toggleFilters()">Genres</button>
+
+  <div id="filters" class="filters hidden">
+    <div id="tags" class="tags"></div>
   </div>
 </div>
 
-<div id="filters" class="filters hidden">
-  <div id="tags" class="tags"></div>
-</div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+</button>
 
 <div id="grid" class="grid"></div>
 
@@ -556,6 +607,11 @@ initTags();
 updateGenreBtn();
 render();
 shuffleSpotlight();
+
+const backToTop = document.getElementById("backToTop");
+window.addEventListener("scroll", () => {
+  backToTop.classList.toggle("visible", window.scrollY > 300);
+}, { passive: true });
 </script>
 </body>
 </html>
