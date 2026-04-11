@@ -37,34 +37,19 @@
     outline: none;
   }
 
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-    padding: 0 20px 20px;
-  }
-
-  .tag {
-    padding: 6px 10px;
-    border-radius: 999px;
-    border: 1px solid #444;
-    cursor: pointer;
-    font-size: 12px;
-    user-select: none;
-    transition: all 0.2s ease;
-  }
-
-  .tag.active {
-    background: white;
-    color: black;
-  }
-
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 18px;
     padding: 20px;
+  }
+
+  .section-label {
+    grid-column: 1 / -1;
+    font-size: 14px;
+    opacity: 0.8;
+    margin: 20px 0 5px;
+    letter-spacing: 1px;
   }
 
   .album {
@@ -81,6 +66,7 @@
     border-radius: 12px;
     aspect-ratio: 1 / 1;
     object-fit: cover;
+    background: linear-gradient(135deg, #333, #111);
   }
 
   .title {
@@ -93,6 +79,17 @@
     font-size: 11px;
     opacity: 0.7;
     text-align: center;
+  }
+
+  .placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    border-radius: 12px;
+    aspect-ratio: 1 / 1;
+    font-size: 12px;
+    opacity: 0.6;
   }
 </style>
 </head>
@@ -113,10 +110,8 @@
   </select>
 </div>
 
-<div id="tags" class="tags"></div>
 <div id="grid" class="grid"></div>
 
-<!-- IMPORTANT: load data first -->
 <script src="albums.js"></script>
 
 <script>
@@ -126,44 +121,24 @@
 
 let state = {
   search: "",
-  sort: "album",
-  activeTags: new Set()
+  sort: "album"
 };
 
 /* =========================
-   DOM
+   HELPERS
 ========================= */
 
-const grid = document.getElementById("grid");
-const search = document.getElementById("search");
-const sort = document.getElementById("sort");
-const tagsContainer = document.getElementById("tags");
+function normalizeTitle(title) {
+  return title.toLowerCase().replace(/^the\s+/i, "");
+}
 
-/* =========================
-   TAGS
-========================= */
+function getInitialLetter(title) {
+  return normalizeTitle(title)[0].toUpperCase();
+}
 
-function initTags() {
-  const tags = [...new Set(albums.flatMap(a => a.tags))].sort();
-
-  tags.forEach(tag => {
-    const el = document.createElement("div");
-    el.className = "tag";
-    el.textContent = tag;
-
-    el.onclick = () => {
-      if (state.activeTags.has(tag)) {
-        state.activeTags.delete(tag);
-        el.classList.remove("active");
-      } else {
-        state.activeTags.add(tag);
-        el.classList.add("active");
-      }
-      render();
-    };
-
-    tagsContainer.appendChild(el);
-  });
+function getDecade(year) {
+  if (!year) return "Unknown";
+  return `${Math.floor(year / 10) * 10}s`;
 }
 
 /* =========================
@@ -172,27 +147,24 @@ function initTags() {
 
 function getFilteredAlbums() {
   return albums
-    .filter(a => {
-      const matchesSearch =
-        (a.album + a.artist).toLowerCase()
-          .includes(state.search.toLowerCase());
-
-      const matchesTags =
-        state.activeTags.size === 0 ||
-        [...state.activeTags].every(tag =>
-          a.tags.includes(tag)
-        );
-
-      return matchesSearch && matchesTags;
-    })
+    .filter(a =>
+      (a.album + a.artist)
+        .toLowerCase()
+        .includes(state.search.toLowerCase())
+    )
     .sort((a, b) => {
       switch (state.sort) {
+
         case "artist":
-          return a.artist.localeCompare(b.artist);
+          return normalizeTitle(a.artist)
+            .localeCompare(normalizeTitle(b.artist));
+
         case "year":
-          return a.year - b.year;
+          return (a.year || 0) - (b.year || 0);
+
         default:
-          return a.album.localeCompare(b.album);
+          return normalizeTitle(a.album)
+            .localeCompare(normalizeTitle(b.album));
       }
     });
 }
@@ -202,16 +174,49 @@ function getFilteredAlbums() {
 ========================= */
 
 function render() {
+  const grid = document.getElementById("grid");
   const list = getFilteredAlbums();
 
   grid.innerHTML = "";
 
+  let lastSection = null;
+
   list.forEach(album => {
+
+    // SECTION HEADERS
+    let section = "";
+
+    if (state.sort === "album") {
+      section = getInitialLetter(album.album);
+    }
+
+    if (state.sort === "artist") {
+      section = getInitialLetter(album.artist);
+    }
+
+    if (state.sort === "year") {
+      section = getDecade(album.year);
+    }
+
+    if (section !== lastSection) {
+      const label = document.createElement("div");
+      label.className = "section-label";
+      label.textContent = section;
+      grid.appendChild(label);
+      lastSection = section;
+    }
+
+    // ALBUM TILE
     const div = document.createElement("div");
     div.className = "album";
 
+    const imgSrc = album.image || "";
+
     div.innerHTML = `
-      <img src="${album.image}">
+      ${imgSrc
+        ? `<img src="${imgSrc}" alt="${album.album}">`
+        : `<div class="placeholder">No image</div>`
+      }
       <div class="title">${album.album}</div>
       <div class="artist">${album.artist}</div>
     `;
@@ -226,12 +231,12 @@ function render() {
    EVENTS
 ========================= */
 
-search.addEventListener("input", e => {
+document.getElementById("search").addEventListener("input", e => {
   state.search = e.target.value;
   render();
 });
 
-sort.addEventListener("change", e => {
+document.getElementById("sort").addEventListener("change", e => {
   state.sort = e.target.value;
   render();
 });
@@ -240,8 +245,8 @@ sort.addEventListener("change", e => {
    INIT
 ========================= */
 
-initTags();
 render();
+
 </script>
 
 </body>
