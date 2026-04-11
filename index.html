@@ -46,6 +46,26 @@
     cursor: pointer;
   }
 
+  /* SEARCH INPUT WITH ICON */
+  .search-wrapper {
+    position: relative;
+    width: 200px;
+  }
+
+  .search-wrapper input {
+    width: 100%;
+    padding-left: 34px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.5;
+  }
+
   /* FILTER DRAWER */
   .filters {
     overflow: hidden;
@@ -86,15 +106,10 @@
 
   /* SPOTLIGHT */
   .spotlight {
+    position: relative;
     display: flex;
     justify-content: center;
-    padding: 10px 20px 0;
-  }
-
-  .spotlight-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    padding: 20px 20px 0;
   }
 
   .spotlight-card {
@@ -108,9 +123,14 @@
     border-radius: 12px;
   }
 
+  /* SHUFFLE BUTTON (ABSOLUTE RIGHT) */
   .shuffle-btn {
-    height: 40px;
-    width: 40px;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 44px;
+    width: 44px;
     border-radius: 50%;
     border: 1px solid #ddd;
     background: white;
@@ -172,6 +192,7 @@
 
   /* MOBILE */
   @media (max-width: 768px) {
+
     h1 {
       font-size: 22px;
     }
@@ -179,6 +200,10 @@
     .controls {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    .search-wrapper {
+      width: 100%;
     }
 
     input, select, button {
@@ -190,12 +215,12 @@
       gap: 12px;
     }
 
-    .spotlight-wrapper {
-      justify-content: center;
-    }
-
     .spotlight-card {
       width: 160px;
+    }
+
+    .shuffle-btn {
+      right: 10px;
     }
 
     .section-tile {
@@ -214,7 +239,11 @@
 <div id="spotlight" class="spotlight"></div>
 
 <div class="controls">
-  <input id="search" placeholder="Search album or artist..." />
+
+  <div class="search-wrapper">
+    <span class="search-icon">🔍</span>
+    <input id="search" placeholder="Search album or artist..." />
+  </div>
 
   <select id="sort">
     <option value="artist">Sort: Artist A–Z</option>
@@ -222,7 +251,8 @@
     <option value="year">Sort: Year</option>
   </select>
 
-  <button id="filterBtn" onclick="toggleFilters()">🔎 Filters</button>
+  <button id="filterBtn" onclick="toggleFilters()">⚙️ Filters</button>
+
 </div>
 
 <div id="filters" class="filters hidden">
@@ -292,8 +322,8 @@ function updateFilterButton() {
   const count = state.activeTags.size;
 
   btn.textContent = count > 0
-    ? `🔎 Filters (${count})`
-    : "🔎 Filters";
+    ? `⚙️ Filters (${count})`
+    : "⚙️ Filters";
 }
 
 /* FILTER + SORT */
@@ -342,14 +372,12 @@ function renderSpotlight() {
   const a = state.spotlight;
 
   el.innerHTML = `
-    <div class="spotlight-wrapper">
-      <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
-        <img src="${a.image}">
-        <div class="title">${a.album}</div>
-        <div class="artist">${a.artist}</div>
-      </div>
-      <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
+    <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
+      <img src="${a.image}">
+      <div class="title">${a.album}</div>
+      <div class="artist">${a.artist}</div>
     </div>
+    <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
   `;
 }
 
