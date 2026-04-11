@@ -24,37 +24,31 @@
     font-size: 28px;
   }
 
-  /* CONTROLS */
+  /* =========================
+     CONTROLS (FIXED LAYOUT)
+  ========================= */
+
   .controls {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
     padding: 10px 16px;
+    align-items: center;
   }
 
-  input, select, button {
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background: white;
-    color: #111;
-    font-size: 14px;
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  /* SEARCH INPUT WITH ICON */
   .search-wrapper {
     position: relative;
-    width: 200px;
+    flex: 1 1 240px;
+    max-width: 320px;
   }
 
   .search-wrapper input {
     width: 100%;
-    padding-left: 34px;
+    padding: 10px 10px 10px 34px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
   }
 
   .search-icon {
@@ -62,11 +56,24 @@
     left: 10px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 14px;
     opacity: 0.5;
+    font-size: 14px;
   }
 
-  /* FILTER DRAWER */
+  select, button {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* =========================
+     FILTERS
+  ========================= */
+
   .filters {
     overflow: hidden;
     transition: all 0.25s ease;
@@ -104,18 +111,28 @@
     color: #fff;
   }
 
-  /* SPOTLIGHT */
+  /* =========================
+     SPOTLIGHT (CENTER FIXED)
+  ========================= */
+
   .spotlight {
-    position: relative;
     display: flex;
     justify-content: center;
     padding: 20px 20px 0;
   }
 
+  .spotlight-layout {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 420px;
+    justify-content: space-between;
+  }
+
   .spotlight-card {
     width: 220px;
-    cursor: pointer;
     text-align: center;
+    cursor: pointer;
   }
 
   .spotlight-card img {
@@ -123,22 +140,21 @@
     border-radius: 12px;
   }
 
-  /* SHUFFLE BUTTON (ABSOLUTE RIGHT) */
   .shuffle-btn {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 44px;
-    width: 44px;
+    height: 42px;
+    width: 42px;
     border-radius: 50%;
     border: 1px solid #ddd;
     background: white;
     cursor: pointer;
     font-size: 18px;
+    flex-shrink: 0;
   }
 
-  /* GRID */
+  /* =========================
+     GRID
+  ========================= */
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -190,7 +206,10 @@
     font-weight: 600;
   }
 
-  /* MOBILE */
+  /* =========================
+     MOBILE
+  ========================= */
+
   @media (max-width: 768px) {
 
     h1 {
@@ -203,28 +222,26 @@
     }
 
     .search-wrapper {
+      max-width: 100%;
+    }
+
+    select, button {
       width: 100%;
     }
 
-    input, select, button {
-      width: 100%;
-    }
-
-    .grid {
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 12px;
+    .spotlight-layout {
+      max-width: 100%;
+      justify-content: center;
+      gap: 10px;
     }
 
     .spotlight-card {
       width: 160px;
     }
 
-    .shuffle-btn {
-      right: 10px;
-    }
-
-    .section-tile {
-      font-size: clamp(18px, 6vw, 28px);
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
     }
   }
 </style>
@@ -236,8 +253,10 @@
   <h1>The CD Vault</h1>
 </header>
 
+<!-- SPOTLIGHT -->
 <div id="spotlight" class="spotlight"></div>
 
+<!-- CONTROLS -->
 <div class="controls">
 
   <div class="search-wrapper">
@@ -246,19 +265,21 @@
   </div>
 
   <select id="sort">
-    <option value="artist">Sort: Artist A–Z</option>
-    <option value="album">Sort: Album A–Z</option>
-    <option value="year">Sort: Year</option>
+    <option value="artist">↕️ Sort: Artist A–Z</option>
+    <option value="album">↕️ Sort: Album A–Z</option>
+    <option value="year">↕️ Sort: Year</option>
   </select>
 
-  <button id="filterBtn" onclick="toggleFilters()">⚙️ Filters</button>
+  <button id="filterBtn" onclick="toggleFilters()">⏷ Filters</button>
 
 </div>
 
+<!-- FILTERS -->
 <div id="filters" class="filters hidden">
   <div id="tags" class="tags"></div>
 </div>
 
+<!-- GRID -->
 <div id="grid" class="grid"></div>
 
 <script src="albums.js"></script>
@@ -284,7 +305,7 @@ function getDecade(year) {
   return year ? `${Math.floor(year / 10) * 10}s` : "Unknown";
 }
 
-/* FILTER TOGGLE */
+/* FILTERS */
 function toggleFilters() {
   const el = document.getElementById("filters");
   el.classList.toggle("hidden");
@@ -322,11 +343,11 @@ function updateFilterButton() {
   const count = state.activeTags.size;
 
   btn.textContent = count > 0
-    ? `⚙️ Filters (${count})`
-    : "⚙️ Filters";
+    ? `⏷ Filters (${count})`
+    : `⏷ Filters`;
 }
 
-/* FILTER + SORT */
+/* DATA */
 function getFilteredAlbums() {
   return albums
     .filter(a => {
@@ -372,12 +393,17 @@ function renderSpotlight() {
   const a = state.spotlight;
 
   el.innerHTML = `
-    <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
-      <img src="${a.image}">
-      <div class="title">${a.album}</div>
-      <div class="artist">${a.artist}</div>
+    <div class="spotlight-layout">
+      <div style="width:42px;"></div>
+
+      <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
+        <img src="${a.image}">
+        <div class="title">${a.album}</div>
+        <div class="artist">${a.artist}</div>
+      </div>
+
+      <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
     </div>
-    <button class="shuffle-btn" onclick="shuffleSpotlight()">🎲</button>
   `;
 }
 
