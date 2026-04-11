@@ -36,7 +36,6 @@
     border: 1px solid #ddd;
     background: white;
     color: #111;
-    outline: none;
   }
 
   button {
@@ -59,7 +58,6 @@
     cursor: pointer;
     font-size: 12px;
     user-select: none;
-    transition: all 0.2s ease;
   }
 
   .tag.active {
@@ -121,7 +119,7 @@
     text-align: center;
   }
 
-  /* SECTION TILE (UPDATED) */
+  /* SECTION TILE */
   .section-tile {
     display: flex;
     align-items: center;
@@ -129,13 +127,8 @@
     background: #f3f3f3;
     border-radius: 12px;
     aspect-ratio: 1 / 1;
-
-    font-weight: 600;
-    color: #111;
-
-    /* responsive typography */
     font-size: clamp(22px, 3vw, 36px);
-    letter-spacing: 1px;
+    font-weight: 600;
   }
 
 </style>
@@ -147,19 +140,18 @@
   <h1>The CD Vault</h1>
 </header>
 
-<div class="spotlight" id="spotlight"></div>
+<div id="spotlight" class="spotlight"></div>
 
 <div class="controls">
   <input id="search" placeholder="Search album or artist..." />
 
   <select id="sort">
-    <option value="album">Sort: Album A–Z</option>
     <option value="artist">Sort: Artist A–Z</option>
+    <option value="album">Sort: Album A–Z</option>
     <option value="year">Sort: Year</option>
-    <option value="color">Sort: Colour Flow</option>
   </select>
 
-  <button onclick="randomSpotlight()">🎲 Shuffle Spotlight</button>
+  <button onclick="shuffleSpotlight()">🎲 Shuffle Spotlight</button>
 </div>
 
 <div id="tags" class="tags"></div>
@@ -168,93 +160,42 @@
 <script src="albums.js"></script>
 
 <script>
-let state = {
+/* =========================
+   STATE
+========================= */
+
+const state = {
   search: "",
   sort: "artist",
   activeTags: new Set(),
   spotlight: null
 };
 
-function normalize(t) {
-  return t.toLowerCase().replace(/^the\s+/i, "");
+/* =========================
+   HELPERS
+========================= */
+
+function normalize(text) {
+  return text.toLowerCase().replace(/^the\s+/i, "");
 }
 
-function letter(t) {
-  return normalize(t)[0].toUpperCase();
+function getLetter(text) {
+  return normalize(text)[0]?.toUpperCase() || "#";
 }
 
-function decade(y) {
-  return y ? `${Math.floor(y / 10) * 10}s` : "Unknown";
+function getDecade(year) {
+  return year ? `${Math.floor(year / 10) * 10}s` : "Unknown";
 }
 
-function rgbToHsl(r, g, b) {
-  r /= 255; g /= 255; b /= 255;
+/* =========================
+   TAGS
+========================= */
 
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const d = max - min;
-
-  let h = 0, s = 0, l = (max + min) / 2;
-
-  if (d !== 0) {
-    s = d / (1 - Math.abs(2 * l - 1));
-
-    switch (max) {
-      case r: h = ((g - b) / d) % 6; break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-
-    h *= 60;
-    if (h < 0) h += 360;
-  }
-
-  return { h, s, l };
-}
-
-function getColorGroup(hex) {
-  if (!hex) return 99;
-
-  const c = hex.replace("#", "");
-  const r = parseInt(c.slice(0,2),16);
-  const g = parseInt(c.slice(2,4),16);
-  const b = parseInt(c.slice(4,6),16);
-
-  const { h, s, l } = rgbToHsl(r, g, b);
-
-  // 🎯 Greys first check
-  if (s < 0.15 || l < 0.1 || l > 0.9) return 6;
-
-  // 🌈 Rainbow buckets
-  if (h < 20 || h >= 340) return 0;   // red
-  if (h < 45) return 1;               // orange
-  if (h < 70) return 2;               // yellow
-  if (h < 160) return 3;              // green
-  if (h < 260) return 4;              // blue
-  return 5;                           // purple
-}
-
-function colorScore(album) {
-  if (!album.color) return 999;
-
-  const c = album.color.replace("#", "");
-  const r = parseInt(c.slice(0,2),16);
-  const g = parseInt(c.slice(2,4),16);
-  const b = parseInt(c.slice(4,6),16);
-
-  const { h } = rgbToHsl(r, g, b);
-  const group = getColorGroup(album.color);
-
-  // combine group + hue for ordering inside group
-  return group * 1000 + h;
-}
-
-/* TAGS */
 function initTags() {
-  const tags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
-  const wrap = document.getElementById("tags");
+  const uniqueTags = [...new Set(albums.flatMap(a => a.tags || []))].sort();
+  const container = document.getElementById("tags");
 
-  tags.forEach(tag => {
+  uniqueTags.forEach(tag => {
     const el = document.createElement("div");
     el.className = "tag";
     el.textContent = tag;
@@ -270,12 +211,15 @@ function initTags() {
       render();
     };
 
-    wrap.appendChild(el);
+    container.appendChild(el);
   });
 }
 
-/* FILTER */
-function getFiltered() {
+/* =========================
+   FILTER + SORT
+========================= */
+
+function getFilteredAlbums() {
   return albums
     .filter(a => {
       const matchesSearch =
@@ -285,8 +229,8 @@ function getFiltered() {
 
       const matchesTags =
         state.activeTags.size === 0 ||
-        [...state.activeTags].every(t =>
-          (a.tags || []).includes(t)
+        [...state.activeTags].every(tag =>
+          (a.tags || []).includes(tag)
         );
 
       return matchesSearch && matchesTags;
@@ -296,33 +240,40 @@ function getFiltered() {
         case "artist":
           return normalize(a.artist).localeCompare(normalize(b.artist));
 
+        case "album":
+          return normalize(a.album).localeCompare(normalize(b.album));
+
         case "year":
           return (a.year || 0) - (b.year || 0);
 
-        case "color":
-          return colorScore(a) - colorScore(b);
-
         default:
-          return normalize(a.album).localeCompare(normalize(b.album));
+          return 0;
       }
     });
 }
 
-/* SPOTLIGHT */
-function randomSpotlight() {
-  const list = getFiltered();
+/* =========================
+   SPOTLIGHT
+========================= */
+
+function shuffleSpotlight() {
+  const list = getFilteredAlbums();
   state.spotlight = list[Math.floor(Math.random() * list.length)];
   renderSpotlight();
 }
 
 function renderSpotlight() {
   const el = document.getElementById("spotlight");
-  if (!state.spotlight) return (el.innerHTML = "");
+
+  if (!state.spotlight) {
+    el.innerHTML = "";
+    return;
+  }
 
   const a = state.spotlight;
 
   el.innerHTML = `
-    <div class="spotlight-card" onclick="window.open('${a.spotify}','_blank')">
+    <div class="spotlight-card" onclick="window.open('${a.spotify}', '_blank')">
       <img src="${a.image}">
       <div class="title">${a.album}</div>
       <div class="artist">${a.artist}</div>
@@ -330,30 +281,32 @@ function renderSpotlight() {
   `;
 }
 
-/* GRID */
+/* =========================
+   GRID RENDER
+========================= */
+
 function render() {
   const grid = document.getElementById("grid");
-  const list = getFiltered();
+  const list = getFilteredAlbums();
 
   grid.innerHTML = "";
 
-  let last = null;
+  let lastSection = null;
 
   list.forEach(a => {
 
     let section;
 
-    if (state.sort === "artist") section = letter(a.artist);
-    else if (state.sort === "album") section = letter(a.album);
-    else if (state.sort === "year") section = decade(a.year);
-    else section = "🌈";
+    if (state.sort === "artist") section = getLetter(a.artist);
+    else if (state.sort === "album") section = getLetter(a.album);
+    else if (state.sort === "year") section = getDecade(a.year);
 
-    if (section !== last) {
+    if (section !== lastSection) {
       const s = document.createElement("div");
       s.className = "tile section-tile";
       s.textContent = section;
       grid.appendChild(s);
-      last = section;
+      lastSection = section;
     }
 
     const div = document.createElement("div");
@@ -371,7 +324,10 @@ function render() {
   });
 }
 
-/* EVENTS */
+/* =========================
+   EVENTS
+========================= */
+
 document.getElementById("search").addEventListener("input", e => {
   state.search = e.target.value;
   render();
@@ -382,10 +338,13 @@ document.getElementById("sort").addEventListener("change", e => {
   render();
 });
 
-/* INIT */
+/* =========================
+   INIT
+========================= */
+
 initTags();
 render();
-randomSpotlight();
+shuffleSpotlight();
 
 </script>
 
