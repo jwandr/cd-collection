@@ -23,11 +23,14 @@
     --accent-soft: #e6f6f2;
   }
 
+  html {
+    overflow-x: hidden;
+  }
+
   html, body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
-    overflow-x: hidden;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
   }
@@ -85,13 +88,6 @@
     flex-shrink: 0;
   }
 
-  .shuffle-btn:hover {
-    background: var(--dark);
-    border-color: var(--dark);
-    color: #fff;
-    transform: translateY(-60%) rotate(180deg);
-  }
-
   .spotlight-label {
     font-size: 10px;
     font-weight: 600;
@@ -114,11 +110,6 @@
     display: block;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-  }
-
-  .spotlight-card:hover img {
-    transform: scale(1.03);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.14);
   }
 
   .spotlight-card .s-title {
@@ -193,10 +184,39 @@
     pointer-events: auto;
   }
 
-  .back-to-top:hover {
-    background: var(--dark);
-    border-color: var(--dark);
-    color: #fff;
+  @media (hover: hover) {
+    .back-to-top:hover {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: #fff;
+    }
+
+    .shuffle-btn:hover {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: #fff;
+      transform: translateY(-60%) rotate(180deg);
+    }
+
+    .spotlight-card:hover img {
+      transform: scale(1.03);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+    }
+
+    .tile:hover { transform: scale(1.04); }
+
+    .sort-pill:hover:not(.active) {
+      border-color: var(--border-mid);
+      color: var(--text);
+    }
+
+    .genre-btn:hover {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: #f0efeb;
+    }
+
+    .tag:hover { border-color: var(--border-mid); color: var(--text); }
   }
 
   .search-wrapper { position: relative; }
@@ -253,11 +273,6 @@
     color: #f0efeb;
   }
 
-  .sort-pill:hover:not(.active) {
-    border-color: var(--border-mid);
-    color: var(--text);
-  }
-
   .genre-btn {
     padding: 8px 16px;
     border-radius: 8px;
@@ -272,7 +287,7 @@
     transition: all 0.15s;
   }
 
-  .genre-btn:hover, .genre-btn.active {
+  .genre-btn.active {
     background: var(--dark);
     border-color: var(--dark);
     color: #f0efeb;
@@ -299,8 +314,6 @@
     letter-spacing: 0.1px;
   }
 
-  .tag:hover { border-color: var(--border-mid); color: var(--text); }
-
   .tag.active {
     background: var(--dark);
     border-color: var(--dark);
@@ -322,7 +335,6 @@
     display: block;
   }
 
-  .tile:hover { transform: scale(1.04); }
   .tile:active { transform: scale(0.97); }
 
   .tile img {
