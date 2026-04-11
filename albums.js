@@ -1,44 +1,30 @@
 // albums.js
 
 const albums = [
-  {
-    album: "Jollification",
-    artist: "The Lightning Seeds",
-    year: 1994,
-    tags: ["Jeff","things"],
-    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c14763d9328c629961e15dcb",
-    spotify: "https://open.spotify.com/album/2aPTNYJ6MjDj7UvIHnJs26?si=qJvDSnBPTDia1_7FJ8nrPg"
-  },
-{
-    album: "In Rainbows",
-    artist: "Radiohead",
-    year: 2007,
-    tags: ["something"],
-    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02de3c04b5fc750b68899b20a9",
-    spotify: "https://open.spotify.com/album/5vkqYmiPBYLaalcmjujWxK?si=8affc7f058454a6c"
-  },
-{
-    album: "O3",
-    artist: "Sunscreen",
-    year: 1993,
-    tags: ["indie"],
-    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02eb3f546acb3f78e9d0f6dd13",
-    spotify: "https://open.spotify.com/album/74rtjNB8yXAi8HcTek9C3G?si=-_5TxT91RbmsvNfw0l1MLA"
-  },
-{
-    album: "A Head Full of Dreams",
-    artist: "Coldplay",
-    year: 2015,
-    tags: ["indie"],
-    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e028ff7c3580d429c8212b9a3b6",
-    spotify: "https://open.spotify.com/album/3cfAM8b8KqJRoIzt3zLKqw?si=bDO0OYtuRiWMI8BYBM9D_Q"
-  },
-{
-    album: "Ghost Stories",
-    artist: "Coldplay",
-    year: 2014,
-    tags: ["indie"],
-    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e5a95573f1b91234630fd2cf",
-    spotify: "https://open.spotify.com/album/2G4AUqfwxcV1UdQjm2ouYr?si=vo-cx20_SC2kgXf6rSuKxg"
-  },
+  {album: "Jollification",    artist: "The Lightning Seeds",    year: 1994,    tags: ["Jeff","things"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02c14763d9328c629961e15dcb",    spotify: "https://open.spotify.com/album/2aPTNYJ6MjDj7UvIHnJs26?si=qJvDSnBPTDia1_7FJ8nrPg"  },
+{album: "In Rainbows",    artist: "Radiohead",    year: 2007,    tags: ["something"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02de3c04b5fc750b68899b20a9",    spotify: "https://open.spotify.com/album/5vkqYmiPBYLaalcmjujWxK?si=8affc7f058454a6c"  },
+{album: "O3",    artist: "Sunscreen",    year: 1993,    tags: ["indie"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02eb3f546acb3f78e9d0f6dd13",    spotify: "https://open.spotify.com/album/74rtjNB8yXAi8HcTek9C3G?si=-_5TxT91RbmsvNfw0l1MLA"  },
+{album: "A Head Full of Dreams",    artist: "Coldplay",    year: 2015,    tags: ["indie"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e028ff7c3580d429c8212b9a3b6",    spotify: "https://open.spotify.com/album/3cfAM8b8KqJRoIzt3zLKqw?si=bDO0OYtuRiWMI8BYBM9D_Q"  },
+{album: "Ghost Stories",    artist: "Coldplay",    year: 2014,    tags: ["indie"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e5a95573f1b91234630fd2cf",    spotify: "https://open.spotify.com/album/2G4AUqfwxcV1UdQjm2ouYr?si=vo-cx20_SC2kgXf6rSuKxg"  },
+{album: "Turning",    artist: "Antony and the Johnsons",    year: 2014,    tags: ["alternative"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0273cc481b76bd7377fc420d70",    spotify: "https://open.spotify.com/album/5E7RTI2PQpY0r1UMdB9j3G?si=X-MdMPyQRr-TyGOcylfzbw"  },
+{album: "Oh, What A Life",    artist: "American Authors",    year: 2014,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e025555496a9c148ed4fbeeea09",    spotify: "https://open.spotify.com/album/5UWYYI5FapJVmGqwQ8d0iS?si=V2S1-FhXQq2XpIKBnUhOJA"  },
+{album: "And The Message is Love",    artist: "Al Green",    year: 1994,    tags: ["old stuff"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0286ad9ea58ae5154305528045",    spotify: "https://open.spotify.com/album/3bHLPFxLMogupf3PnxjsY2?si=irMZwu7ZRmCqOfL3zV5EYQ"  },
+{album: "Prayer",    artist: "Anthony Callea",    year: 2004,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0208f6e38dab6155465b1af9cb",    spotify: "https://open.spotify.com/album/7iXdete0vK3Q5GlPqhOwj6?si=QTshsK09RO6B9sryQqZvXA"  },
+{album: "Singles",    artist: "Alison Moyett",    year: 1995,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e029b5159ad84b6a40b877c47d9",    spotify: "https://open.spotify.com/album/42EwWcKbmvteTymCFdUpt5?si=U5e7xa5ZSn6edrttld3Vfw"  },
+{album: "Love",    artist: "Aztec Camera",    year: 1987,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e022e79ebc89890980fefd8fee6",    spotify: "https://open.spotify.com/album/5KcrjSFjcLL9pdGaSSkOlp?si=k-afK_OASPeHM6p6K7LZyQ"  },
+{album: "Back to Black",    artist: "Amy Winehouse",    year: 2006,    tags: ["soul"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02dc65d5638a3de4a0bdf3c05f",    spotify: "https://open.spotify.com/album/097eYvf9NKjFnv4xA9s2oV?si=pvgqawUgTwahvRTD03qbZQ"  },
+{album: "Lioness: Hidden Treasures",    artist: "Amy Winehouse",    year: 2011,    tags: ["soul"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e024c896e873306c17847c254e9",    spotify: "https://open.spotify.com/album/4xdRjOhY9NHmMpI7U3e2c3?si=7zP55Kp2Ty6S__kkLwEQpw"  },
+{album: "Neon Bible",    artist: "Arcade Fire",    year: 2007,    tags: ["indie"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e029e0e42aa866e5fa167b19608",    spotify: "https://open.spotify.com/album/4GT6uZod4p5RiDMOVHOMme?si=Hx6mo3XDSK6ovSbnnaNOQQ"  },
+{album: "Queen of Soul",    artist: "Aretha Franklin",    year: 2008,    tags: ["soul"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02cf07c491dbf8cb2c314b4dae",    spotify: "https://open.spotify.com/album/6OxXVtZwExAmdrUIG2afFf?si=_QB04LN0S822oZFIJQ6ltg"  },
+{album: "Diva",    artist: "Annie Lenox",    year: 1992,    tags: ["Indie"," alternative"," pop"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02abd613e1f4e193ccc603210f",    spotify: "https://open.spotify.com/album/33ImEB9taJ3Tie4APfTL7B?si=zclNLA-iRIWKZDmixKS-aQ"  },
+{album: "Medusa",    artist: "Annie Lenox",    year: 1995,    tags: ["Indie"," alternative"," pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02414a19484165b2f67589eeb4",    spotify: "https://open.spotify.com/album/1T2aRQcFUL59f9kQ876dLX?si=KBW1q2wcTfqhKuo9jKgZgA"  },
+{album: "Lonely Boy: The Asylum Years Anthology",    artist: "Andrew Gold",    year: 2020,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02de269837f5c5f59ca96c463e",    spotify: "https://open.spotify.com/album/6QQc1nH9rGtHH7d5gIlpYl?si=qizlNH0NTSewNbFhWXsIig"  },
+{album: "Alphabeat",    artist: "Alphabeat",    year: 2007,    tags: ["pop"," europop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e021448c59fab1657f8735d834b",    spotify: "https://open.spotify.com/album/5Ie857Nf6XGohqt4axcvTQ?si=FuxJCh5iQHCfxf4sz4hL7A"  },
+{album: "This is Alphabeat",    artist: "Alphabeat",    year: 2008,    tags: ["pop"," europop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e027f2ad1fa57aa0a2c0bddf9b7",    spotify: "https://open.spotify.com/album/4dzRQNfbgCqWFHLJjgzBic?si=H12aiMKRQrOvbE6l2TcAqQ"  },
+{album: "Watching Angels Mend",    artist: "Alex Lloyd",    year: 2001,    tags: ["pop"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e024dd2d5f7326a25c295129d93",    spotify: "https://open.spotify.com/album/6ETAgT0iWkJKsKJeNT41Z6?si=XIxpEZ3gQEuhKRciH-JpYA"  },
+{album: "19",    artist: "Adele",    year: 2008,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0289d0ff2366a208016b6e9c6e",    spotify: "https://open.spotify.com/album/5awrJZBt3rP9RO5hlYdZB0?si=7zO3eAfET8W13JBG2p6rxQ"  },
+{album: "21",    artist: "Adele",    year: 2011,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e02e63ac9f24aab9acc90f81960",    spotify: "https://open.spotify.com/album/5duyQokC4FMcWPYTV9Gpf9?si=uvn6yZDWSP2n7hrUeoh94g"  },
+{album: "The Very Best Of",    artist: "Adam Ant",    year: 2006,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e028f5214fbb90b33bc07992b0f",    spotify: "https://open.spotify.com/album/3MlJ1QPKiWyUqGrlTzk19g?si=tzY5KyQJQ2O7KZR181QFQw"  },
+{album: "Lexicon of Love",    artist: "ABC",    year: 2023,    tags: ["pop"],    image: "https://image-cdn-ak.spotifycdn.com/image/ab67616d00001e0277f1fe13b026c898b2fafd63",    spotify: "https://open.spotify.com/album/65xQWBCb4afczmHgnnYLpY?si=CGMP3mHYTpivDFQxU5aeTg"  },
+{album: "ABBA Gold",    artist: "ABBA",    year: 2008,    tags: ["pop"," europop"],    image: "https://image-cdn-fa.spotifycdn.com/image/ab67616d00001e02f7ecaf9daf2c1d5ca89f7312",    spotify: "https://open.spotify.com/album/2cKZfaz7GiGtZEeQNj1RyR?si=rapxoCgRTPKMiK_NOoTkJA"  }
 ];
