@@ -17,7 +17,7 @@
     text-align: center;
   }
 
-  input, button {
+  input {
     width: 100%;
     padding: 12px;
     margin: 10px 0;
@@ -25,11 +25,24 @@
     border: none;
   }
 
+  textarea {
+    width: 100%;
+    height: 120px;
+    margin-top: 10px;
+    border-radius: 8px;
+    padding: 10px;
+  }
+
   button {
-    cursor: pointer;
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: none;
     background: white;
     color: black;
     font-weight: bold;
+    cursor: pointer;
   }
 
   pre {
@@ -38,18 +51,6 @@
     border-radius: 10px;
     overflow: auto;
   }
-
-  .card {
-    margin-top: 20px;
-    padding: 15px;
-    background: #1e1e1e;
-    border-radius: 10px;
-  }
-
-  img {
-    width: 120px;
-    border-radius: 10px;
-  }
 </style>
 </head>
 
@@ -57,40 +58,33 @@
 
 <h1>CD Vault Builder</h1>
 
-<input id="url" placeholder="Paste Spotify album URL..." />
-<button onclick="fetchAlbum()">Fetch Album</button>
+<input id="spotify" placeholder="Spotify album URL" />
+<input id="album" placeholder="Album name" />
+<input id="artist" placeholder="Artist name" />
+<input id="image" placeholder="Album image URL (paste from Spotify)" />
+<input id="year" placeholder="Year (optional)" />
+<input id="tags" placeholder="Tags (comma separated)" />
 
-<div id="output"></div>
+<button onclick="build()">Generate JSON</button>
+
+<pre id="output"></pre>
 
 <script>
-async function fetchAlbum() {
-  const url = document.getElementById("url").value;
-
-  const res = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(url));
-  const data = await res.json();
-
-  // parse artist/title from HTML-ish structure
-  const title = data.title;
-  const artist = data.author_name;
-  const image = data.thumbnail_url;
-
+function build() {
   const albumObj = {
-    album: title,
-    artist: artist,
-    year: null,
-    tags: [],
-    image: image,
-    spotify: url
+    album: document.getElementById("album").value,
+    artist: document.getElementById("artist").value,
+    year: document.getElementById("year").value || null,
+    tags: document.getElementById("tags").value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean),
+    image: document.getElementById("image").value,
+    spotify: document.getElementById("spotify").value
   };
 
-  document.getElementById("output").innerHTML = `
-    <div class="card">
-      <img src="${image}" />
-      <h3>${title}</h3>
-      <p>${artist}</p>
-      <pre>${JSON.stringify(albumObj, null, 2)}</pre>
-    </div>
-  `;
+  document.getElementById("output").textContent =
+    JSON.stringify(albumObj, null, 2);
 }
 </script>
 
