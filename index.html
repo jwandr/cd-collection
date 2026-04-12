@@ -607,7 +607,8 @@ function initTags() {
 function updateGenreBtn() {
   const n = state.activeTags.size;
   const btn = document.getElementById("filterBtn");
-  btn.textContent = n > 0 ? `Genres (${n})` : "Genres";
+  const label = n > 0 ? `Genres (${n})` : "Genres";
+  btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>${label}`;
   btn.classList.toggle("active", n > 0);
 }
 
