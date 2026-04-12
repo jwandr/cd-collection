@@ -38,24 +38,16 @@
 
   /* ── HEADER ── */
   header {
-    padding: 24px 24px 12px;
+    padding: 20px 24px 12px;
     text-align: center;
     background: var(--bg-dark);
   }
 
-  h1 {
-    font-size: clamp(20px, 4.5vw, 32px);
-    font-weight: 600;
-    letter-spacing: -0.6px;
-    color: var(--text);
-  }
-
-  .album-count {
-    font-size: 11px;
-    color: var(--subtle);
-    margin-top: 5px;
-    letter-spacing: 0.5px;
-    font-weight: 400;
+  .header-logo {
+    width: min(320px, 80vw);
+    height: auto;
+    display: block;
+    margin: 0 auto;
   }
 
   /* ── SPOTLIGHT ── */
@@ -284,8 +276,16 @@
     color: #f0efeb;
   }
 
+  .controls-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--border-mid);
+    flex-shrink: 0;
+    margin: 0 2px;
+  }
+
   .genre-btn {
-    padding: 8px 16px;
+    padding: 8px 10px;
     border-radius: 8px;
     border: 1px solid var(--border);
     background: var(--surface);
@@ -296,6 +296,9 @@
     cursor: pointer;
     white-space: nowrap;
     transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
   }
 
   .genre-btn.active {
@@ -308,6 +311,37 @@
   .filters { overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease; }
   .filters.hidden { max-height: 0; opacity: 0; }
   .filters.open   { max-height: 300px; opacity: 1; padding: 10px 16px 0; }
+
+  .filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .filters-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--subtle);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+
+  .clear-btn {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 0;
+    font-family: 'Inter', sans-serif;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s;
+  }
+
+  .clear-btn:hover { color: var(--text); }
 
   .tags { display: flex; flex-wrap: wrap; gap: 6px; }
 
@@ -408,9 +442,50 @@
   .empty-state {
     grid-column: 1/-1;
     text-align: center;
-    padding: 60px 20px;
+    padding: 64px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .empty-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--subtle);
+    margin-bottom: 4px;
+  }
+
+  .empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .empty-sub {
     font-size: 13px;
+    color: var(--muted);
+    max-width: 240px;
+    line-height: 1.5;
+  }
+
+  .empty-reset {
+    margin-top: 6px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border-mid);
+    background: var(--surface);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
   }
 
   /* ── RESPONSIVE ── */
@@ -434,8 +509,7 @@
 <body>
 
 <header>
-  <h1>ST's Digital CD Rack</h1>
-  <div class="album-count" id="albumCount"></div>
+  <img src="Timify.png" alt="ST's Digital CD Rack" class="header-logo">
 </header>
 
 <div id="spotlight" class="spotlight"></div>
@@ -454,11 +528,21 @@
       <button class="sort-pill active" data-sort="artist">Artist</button>
       <button class="sort-pill" data-sort="album">Album</button>
       <button class="sort-pill" data-sort="year">Year</button>
-      <button id="filterBtn" class="genre-btn" onclick="toggleFilters()">Genres</button>
+      <span class="controls-divider"></span>
+      <button id="filterBtn" class="genre-btn" onclick="toggleFilters()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/>
+        </svg>
+        Genres
+      </button>
     </div>
   </div>
 
   <div id="filters" class="filters hidden">
+    <div class="filters-header">
+      <span class="filters-label">Filter by genre</span>
+      <button class="clear-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
+    </div>
     <div id="tags" class="tags"></div>
   </div>
 </div>
@@ -535,11 +619,13 @@ function getFiltered() {
     });
 }
 
-function updateCount(list) {
-  const el = document.getElementById("albumCount");
-  el.textContent = list.length === albums.length
-    ? `${albums.length} albums`
-    : `Showing ${list.length} of ${albums.length}`;
+function resetAll() {
+  state.search = "";
+  state.activeTags.clear();
+  document.getElementById("search").value = "";
+  document.querySelectorAll(".tag").forEach(t => t.classList.remove("active"));
+  updateGenreBtn();
+  render();
 }
 
 function shuffleSpotlight() {
@@ -570,14 +656,37 @@ function renderSpotlight() {
     </div>`;
 }
 
+function clearFilters() {
+  state.activeTags.clear();
+  document.querySelectorAll(".tag").forEach(t => t.classList.remove("active"));
+  updateGenreBtn();
+  render();
+}
+
 function render() {
   const grid = document.getElementById("grid");
   const list = getFiltered();
-  updateCount(list);
   grid.innerHTML = "";
 
   if (!list.length) {
-    grid.innerHTML = `<div class="empty-state">No albums match your search.</div>`;
+    const hasSearch = state.search.length > 0;
+    const hasTags = state.activeTags.size > 0;
+    const tip = hasSearch && hasTags
+      ? "Try adjusting your search or clearing some genre filters."
+      : hasSearch
+      ? "Try a different search term, or browse by genre."
+      : "Try selecting fewer genres.";
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <div class="empty-title">No albums found</div>
+        <div class="empty-sub">${tip}</div>
+        <button class="empty-reset" onclick="resetAll()">Reset all filters</button>
+      </div>`;
     return;
   }
 
