@@ -44,7 +44,7 @@
   }
 
   .header-logo {
-    width: min(320px, 80vw);
+    width: min(180px, 70vw);
     height: auto;
     display: block;
     margin: 0 auto;
@@ -365,6 +365,12 @@
     color: #f0efeb;
   }
 
+  .clear-btn-tag {
+    border-style: dashed !important;
+    color: var(--muted) !important;
+    background: transparent !important;
+  }
+
   /* ── GRID ── */
   .grid {
     display: grid;
@@ -539,10 +545,6 @@
   </div>
 
   <div id="filters" class="filters hidden">
-    <div class="filters-header">
-      <span class="filters-label">Filter by genre</span>
-      <button class="clear-btn" id="clearBtn" onclick="clearFilters()">Clear all</button>
-    </div>
     <div id="tags" class="tags"></div>
   </div>
 </div>
@@ -593,6 +595,13 @@ function initTags() {
     };
     container.appendChild(el);
   });
+
+  const clearEl = document.createElement("button");
+  clearEl.className = "tag clear-btn-tag";
+  clearEl.id = "clearBtn";
+  clearEl.textContent = "✕ Clear all";
+  clearEl.onclick = clearFilters;
+  container.appendChild(clearEl);
 }
 
 function updateGenreBtn() {
