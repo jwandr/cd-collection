@@ -75,13 +75,21 @@
 <div id="output"></div>
 
 <script>
-function extractId(url) {
-  const match = url.match(/album\/([a-zA-Z0-9]+)/);
-  return match ? match[1] : null;
+function extractSpotifyInfo(url) {
+  const match = url.match(/(album|playlist)\/([a-zA-Z0-9]+)/);
+  
+  if (!match) return null;
+
+  return {
+    type: match[1],
+    id: match[2]
+  };
 }
 
-async function fetchEmbed(id) {
-  const res = await fetch(`https://open.spotify.com/oembed?url=https://open.spotify.com/album/${id}`);
+async function fetchEmbed(type, id) {
+  const res = await fetch(
+    `https://open.spotify.com/oembed?url=https://open.spotify.com/${type}/${id}`
+  );
   return res.json();
 }
 
@@ -92,45 +100,48 @@ function copy(text) {
 
 async function build() {
   const url = document.getElementById("spotify").value;
-  const id = extractId(url);
+  const info = extractSpotifyInfo(url);
 
-  if (!id) {
-    alert("Invalid Spotify album URL");
+  if (!info) {
+    alert("Invalid Spotify album or playlist URL");
     return;
   }
 
   let data;
   try {
-    data = await fetchEmbed(id);
+    data = await fetchEmbed(info.type, info.id);
   } catch (e) {
-    alert("Could not fetch album data (Spotify blocked request)");
+    alert("Could not fetch Spotify data");
     return;
   }
 
-  const albumObj = {
-    album: data.title,
-    artist: data.author_name,
+  const obj = {
+    type: info.type,
+    title: data.title,
+    creator: data.author_name,
     image: data.thumbnail_url,
     spotify: url,
     tags: []
   };
 
+  const label = info.type === "album" ? "Artist" : "Creator";
+
   document.getElementById("output").innerHTML = `
     <div class="card">
-      <img src="${albumObj.image}" />
+      <img src="${obj.image}" />
 
-      <div class="row"><b>Album:</b> ${albumObj.album}</div>
-      <div class="row"><b>Artist:</b> ${albumObj.artist}</div>
+      <div class="row"><b>${info.type === "album" ? "Album" : "Playlist"}:</b> ${obj.title}</div>
+      <div class="row"><b>${label}:</b> ${obj.creator}</div>
 
-      <div class="row click" onclick="copy('${albumObj.image}')">
+      <div class="row click" onclick="copy('${obj.image}')">
         📋 Click to copy image URL
       </div>
 
-      <div class="row click" onclick="copy(JSON.stringify(${JSON.stringify(albumObj)}, null, 2))">
+      <div class="row click" onclick='copy(${JSON.stringify(JSON.stringify(obj, null, 2))})'>
         📋 Copy JSON object
       </div>
 
-      <pre>${JSON.stringify(albumObj, null, 2)}</pre>
+      <pre>${JSON.stringify(obj, null, 2)}</pre>
     </div>
   `;
 }
